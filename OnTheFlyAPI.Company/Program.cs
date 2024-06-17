@@ -26,7 +26,6 @@ namespace OnTheFlyAPI.Company
 
             app.UseAuthorization();
 
-
             app.MapControllers();
 
             app.Run();
