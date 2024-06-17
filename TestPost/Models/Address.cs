@@ -11,7 +11,7 @@ namespace TestPost.Models
         public string Street { get; set; }
         public int Number {  get; set; }
         [JsonProperty("complemento")]
-        public string Complement {  get; set; }
+        public string? Complement {  get; set; }
         [JsonProperty("localidade")]
         public string City {  get; set; }
         [JsonProperty("uf")]

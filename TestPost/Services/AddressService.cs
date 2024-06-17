@@ -10,13 +10,12 @@ namespace TestPost.Services
         {
 
             Address address = new();
-            var cep = string.Join("", addressDTO.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
             string _url = "https://viacep.com.br/ws";
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    string url = $"{_url}/{cep}/json/";
+                    string url = $"{_url}/{addressDTO.ZipCode}/json/";
                     HttpResponseMessage response = await client.GetAsync(url);
 
                     if (response.IsSuccessStatusCode)

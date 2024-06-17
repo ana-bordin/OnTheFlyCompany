@@ -3,17 +3,23 @@ using TestPost.Models;
 using TestPost.Services;
 namespace TestPost.Controllers
 {
-    [Route("api/Company")]
+    [Route("api/[controller]")]
     [ApiController]
     public class PostController : Controller
     {
-        private readonly Post _postService;
+        private readonly Services.Post _postService;
         private readonly AddressService _addressService;
 
-        public PostController(Post postService, AddressService addressService)
+        public PostController(Services.Post postService, AddressService addressService)
         {
             _postService = postService;
             _addressService = addressService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<Company>> Get(Company company)
+        {
+            return company;
         }
 
         [HttpPost]
@@ -22,12 +28,16 @@ namespace TestPost.Controllers
             Company company;
             try
             {
+                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
+                if(dto.Address.ZipCode.Length != 8)
+                    return Problem($"CEP ({dto.Address.ZipCode}) diferente de 8 dígitos!");
+
                 if (!Company.VerificarCnpj(dto.Cnpj))
-                    return BadRequest("CNPJ Inválido!");
+                    return Problem("CNPJ Inválido!");
 
                 var address = await _addressService.RetrieveAdressAPI(dto.Address);
                 if (address == null)
-                    return BadRequest("CEP Inválido!");
+                    return Problem("CEP Inválido!");
 
                 company = new(dto);
                 company.Address = address;
@@ -38,7 +48,7 @@ namespace TestPost.Controllers
                 throw;
             }
 
-            return company;
+            return CreatedAtAction("Get", company, company);
         }
     }
 }
