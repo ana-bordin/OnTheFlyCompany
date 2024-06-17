@@ -1,10 +1,12 @@
-﻿using System.Runtime.ConstrainedExecution;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System.Runtime.ConstrainedExecution;
 using TestPost.Models;
 
 namespace TestPost
 {
     public class Company
     {
+        [BsonId]
         public string Cnpj { get; set; }
         public string Name { get; set; }
         public string NameOpt { get; set; }

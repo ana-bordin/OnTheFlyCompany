@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using OnTheFlyAPI.Company.Models;
 using OnTheFlyAPI.Company.Services;
 
 namespace OnTheFlyAPI.Company.Controllers
@@ -14,10 +15,39 @@ namespace OnTheFlyAPI.Company.Controllers
             _postService = postService;
         }
 
-        [HttpPost]
-        public async Task<Models.Company> Post(Models.Company company)
+        [HttpGet]
+        public async Task<ActionResult<Models.Company>> Get(Models.Company company)
         {
-            return await _postService.PostCompany(company);
+            return company;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Models.Company>> Post(CompanyDTO dto)
+        {
+            Models.Company company;
+            try
+            {
+                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
+                if (dto.Address.ZipCode.Length != 8)
+                    return Problem($"CEP ({dto.Address.ZipCode}) diferente de 8 dígitos!");
+
+                if (!Models.Company.VerificarCnpj(dto.Cnpj))
+                    return Problem("CNPJ Inválido!");
+                /*
+                var address = await _addressService.RetrieveAdressAPI(dto.Address);
+                if (address == null)
+                    return Problem("CEP Inválido!");
+                */
+                company = new(dto);
+                //company.Address = address;
+                var result = await _postService.PostCompany(company);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+
+            return CreatedAtAction("Get", company, company);
         }
     }
 }

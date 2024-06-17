@@ -1,4 +1,4 @@
-﻿namespace OnTheFlyAPI.Company.Utils
+﻿namespace OnTheFlyAPI.Address.Utils
 {
     public interface ICompanyAPIDataBaseSettings
     {
