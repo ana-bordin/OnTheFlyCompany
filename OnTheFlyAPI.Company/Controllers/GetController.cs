@@ -2,7 +2,7 @@
 
 namespace OnTheFlyAPI.Company.Controllers
 {
-    public class UpdateController : Controller
+    public class GetController : Controller
     {
         public IActionResult Index()
         {
