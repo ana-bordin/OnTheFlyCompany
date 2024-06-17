@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Options;
+using OnTheFlyAPI.Company.Services;
+using OnTheFlyAPI.Company.Utils;
+
 namespace OnTheFlyAPI.Company
 {
     public class Program
@@ -6,13 +10,17 @@ namespace OnTheFlyAPI.Company
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
             builder.Services.AddControllers();
 
-            var app = builder.Build();
+            builder.Services.Configure<CompanyAPIDataBaseSettings>(
+    builder.Configuration.GetSection(nameof(CompanyAPIDataBaseSettings)));
 
-            // Configure the HTTP request pipeline.
+            builder.Services.AddSingleton<ICompanyAPIDataBaseSettings>(sp =>
+            sp.GetRequiredService<IOptions<CompanyAPIDataBaseSettings>>().Value);
+
+            builder.Services.AddSingleton<Get>();
+
+            var app = builder.Build();
 
             app.UseHttpsRedirection();
 
