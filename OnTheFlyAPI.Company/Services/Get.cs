@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using OnTheFlyAPI.Company.Utils;
 using System.Text.RegularExpressions;
 
@@ -21,39 +22,32 @@ namespace OnTheFlyAPI.Company.Services
         {
             if (param == 0)
             {
-                return _companyCollection.Find(c => true).ToList();
+                return await _companyCollection.Find(c => true).ToListAsync();
             }
             else if (param == 1)
             {
-                return _companyHistoryCollection.Find(c => true).ToList();
+                return await _companyHistoryCollection.Find(c => true).ToListAsync();
             }
             return null;
         }
 
         public async Task<Models.Company> GetByCnpj(int param, string cnpj)
         {
-            string numberOnly = Regex.Replace(cnpj, @"[^\d]", String.Empty);
-            if (numberOnly.Length == 14)
-            {
-                numberOnly = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
-            }
-            else
-            {
-                return null;
-            }
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             if (param == 0)
             {
-                return await _companyCollection.Find(c => c.Cnpj == numberOnly).FirstOrDefaultAsync();
+                return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
             }
             else if (param == 1)
             {
-                return await _companyHistoryCollection.Find(c => c.Cnpj == numberOnly).FirstOrDefaultAsync();
+                return await _companyHistoryCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
             }
             return null;
         }
 
         public async Task<Models.Company> GetByName(int param, string name)
         {
+            name = name.Replace("+", " ");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Name == name).FirstOrDefaultAsync();

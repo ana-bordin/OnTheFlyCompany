@@ -15,25 +15,52 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpGet("{param}")]
-        public async Task<List<Models.Company>> GetAll(int param) => await _getService.GetAll(param);
-
-
-        [HttpGet("{param},{value}")]
-        public async Task<ActionResult<Models.Company>> Get(int param, string value)
+        public async Task<ActionResult<List<Models.Company>>> GetAll(int param)
         {
-            value = value.Replace("+", " ");
-            Models.Company company;
-            company = await _getService.GetByCnpj(param, value);
+            var company = await _getService.GetAll(param);
 
-            if (company == null)
+            if (param != 0 && param != 1)
             {
-                company = await _getService.GetByName(param, value);
+                return BadRequest("Parametro deve ser 0 ou 1");
+            }
+            if (company.Count == 0)
+            {
+                return BadRequest("Nao ha companhias cadastradas");
+            }
+            return Ok(company);
+        }
+
+
+        [HttpGet("cnpj/{param}/{cnpj}")]
+        public async Task<ActionResult<Models.Company>> GetByCnpj(int param, string cnpj)
+        {
+            var company = _getService.GetByCnpj(param, cnpj);
+
+            if (param != 0 && param != 1)
+            {
+                return BadRequest("Parametro deve ser 0 ou 1");
             }
             if (company == null)
             {
                 return NotFound("Companhia nao encontrada");
             }
-            return company;
+            return Ok(company);
+        }
+
+        [HttpGet("name/{param}/{name}")]
+        public async Task<ActionResult<Models.Company>> GetByName(int param, string name)
+        {
+            var company = await _getService.GetByName(param, name);
+
+            if (param != 0 && param != 1)
+            {
+                return BadRequest("Parametro deve ser 0 ou 1");
+            }
+            if (company == null)
+            {
+                return NotFound("Companhia nao encontrada");
+            }
+            return Ok(company);
         }
     }
 }
