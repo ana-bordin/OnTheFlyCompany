@@ -3,32 +3,35 @@ using OnTheFlyAPI.Company.Services;
 
 namespace OnTheFlyAPI.Company.Controllers
 {
-    [Route("api/[controller]")]
+    //[Route("api/[controller]")]
+    //[ApiController]
+    [Route("api/delete")]
     [ApiController]
-    public class DeleteController : ControllerBase
+    public class DeleteController : Controller
     {
-        private readonly CompanyService _companyService;
-        private readonly CompanyHistoryService _companyHistoryService;
+        private readonly Delete _companyService;
         //private readonly AddressService _addressService;
-        public DeleteController(CompanyService companyService, CompanyHistoryService companyHistoryService)
+        public DeleteController(Delete companyService)
         {
             _companyService = companyService;
-            _companyHistoryService = companyHistoryService;
         }
 
-        [HttpDelete]      
+        [HttpDelete("delete/{cnpj}")]      
         public ActionResult<Models.Company> Delete(string cnpj)
         {
-            var company = _companyService.GetByCnpj(0, cnpj);
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var companyResult = _companyService.GetByCnpj(0, cnpj);
             if (cnpj == null)
                 return NotFound();
             
-            var inserted = _companyService.PostHistoryCompany(company.Result);
+            Models.Company company = companyResult.Result;
+
+            var inserted = _companyService.PostHistoryCompany(company);
             
             if (inserted == null)
                 return BadRequest();
 
-            var deleted = _companyService.Delete(cnpj);
+            var deleted = _companyService.DeleteCompany(cnpj);
             
             if (deleted == false)
                 return BadRequest();
@@ -37,9 +40,10 @@ namespace OnTheFlyAPI.Company.Controllers
             
         }
 
-        [HttpDelete]
+        [HttpDelete("restorage/{cnpj}")]
         public ActionResult<Models.Company> Restorage(string cnpj)
         {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             var company = _companyService.GetByCnpj(1, cnpj);
             if (cnpj == null)
                 return NotFound();
@@ -49,7 +53,7 @@ namespace OnTheFlyAPI.Company.Controllers
             if (inserted == null)
                 return BadRequest();
 
-            var deleted = _companyService.Delete(cnpj);
+            var deleted = _companyService.DeleteCompany(cnpj);
 
             if (deleted == null)
                 return BadRequest();

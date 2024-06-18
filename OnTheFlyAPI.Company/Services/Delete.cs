@@ -5,12 +5,12 @@ using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.Company.Services
 {
-    public class CompanyService
+    public class Delete
     {
         private readonly IMongoCollection<Models.Company> _companyCollection;
         private readonly IMongoCollection<Models.Company> _companyHistoryCollection;
 
-        public CompanyService(ICompanyAPIDataBaseSettings settings)
+        public Delete(ICompanyAPIDataBaseSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
@@ -107,7 +107,7 @@ namespace OnTheFlyAPI.Company.Services
         }
 
 
-        public bool Delete(string cnpj)
+        public bool DeleteCompany(string cnpj)
         {
             var result = _companyCollection.DeleteOne(c => c.Cnpj == cnpj);
             if (result.DeletedCount > 0)
