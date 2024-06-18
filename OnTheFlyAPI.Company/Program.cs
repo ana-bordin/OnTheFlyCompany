@@ -20,10 +20,6 @@ namespace OnTheFlyAPI.Company
 
             builder.Services.AddSingleton<CompanyService>();
 
-            //builder.Services.AddSingleton<Put>();
-            builder.Services.AddSingleton<CompanyService>();
-
-
             var app = builder.Build();
 
             app.UseHttpsRedirection();
