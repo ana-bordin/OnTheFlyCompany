@@ -1,6 +1,7 @@
 ﻿using MongoDB.Driver;
 using Newtonsoft.Json;
 using OnTheFlyAPI.Address.Models;
+using OnTheFlyAPI.Company.Models;
 using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.Company.Services
@@ -9,6 +10,7 @@ namespace OnTheFlyAPI.Company.Services
     {
         private readonly IMongoCollection<Models.Company> _companyCollection;
         private readonly IMongoCollection<Models.Company> _companyHistoryCollection;
+        private readonly IMongoCollection<Models.Aircraft> _aircraftCollection;
 
         public CompanyService(ICompanyAPIDataBaseSettings settings)
         {
@@ -16,6 +18,7 @@ namespace OnTheFlyAPI.Company.Services
             var database = client.GetDatabase(settings.DatabaseName);
             _companyCollection = database.GetCollection<Models.Company>(settings.CompanyCollectionName);
             _companyHistoryCollection = database.GetCollection<Models.Company>(settings.CompanyHistoryCollectionName);
+            _aircraftCollection = database.GetCollection<Models.Aircraft>(settings.AircraftCollectionName);
         }
 
         public async Task<List<Models.Company>> GetAll(int param)
@@ -56,8 +59,8 @@ namespace OnTheFlyAPI.Company.Services
             }
             return null;
         }
-        
-        
+
+
         public async Task<Address.Models.Address> RetrieveAdressAPI(AddressDTO dto)
         {
             Address.Models.Address address;
@@ -79,6 +82,51 @@ namespace OnTheFlyAPI.Company.Services
                     else
                     {
                         address = null;
+                        Console.WriteLine("Error at consuming ZipCode WS.");
+                        Console.WriteLine(response.StatusCode);
+                    }
+                }
+                return address;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<Models.Aircraft> PostAircraft(string cnpj)
+        {
+            Aircraft aircraft = new Aircraft
+            {
+                Capacity = 100,
+                CnpjCompany = cnpj,
+                DTLastFlight = DateTime.Now,
+                DTRegistry = DateTime.Now,
+                Rab = "PT-2222"
+            };
+            if (aircraft != null)
+                _aircraftCollection.InsertOne(aircraft);
+
+            return aircraft;
+            /*
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    string url = "https://localhost:7051/api/address/";
+                    string jsonAddress = JsonConvert.SerializeObject(aircraft);
+
+                    var content = new StringContent(jsonAddress, System.Text.Encoding.UTF8, "application/json");
+                    HttpResponseMessage response = await client.PostAsync(url, content);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        var ad = JsonConvert.DeserializeObject<Models.Aircraft>(responseBody);
+                        address = ad;
+                    }
+                    else
+                    {
+                        address = null;
                         Console.WriteLine("Erro no consumo do WS CEP.");
                         Console.WriteLine(response.StatusCode);
                     }
@@ -89,6 +137,7 @@ namespace OnTheFlyAPI.Company.Services
             {
                 throw;
             }
+            */
         }
 
 

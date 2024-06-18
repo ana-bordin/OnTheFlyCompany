@@ -22,28 +22,40 @@ namespace OnTheFlyAPI.Company.Controllers
             Models.Company company;
             try
             {
-                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
+                var cnpjaux = string.Join("", dto.Cnpj.Where(Char.IsDigit)); // Somente numeros 
+                if (await _companyService.GetByCnpj(0, cnpjaux) != null)
+                    return Problem("Company is already registered!!");
+                if (await _companyService.GetByCnpj(1, cnpjaux) != null)
+                    return Problem("Company is already registered and it is deleted. Restore it if needed.");
+
+                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Somente numeros
                 if (dto.Address.ZipCode.Length != 8)
-                    return Problem($"CEP ({dto.Address.ZipCode}) diferente de 8 dígitos!");
+                    return Problem($"ZipCode ({dto.Address.ZipCode}) different than 8 digits!");
 
                 if (!Models.Company.VerificarCnpj(dto.Cnpj))
-                    return Problem("CNPJ Inválido!");
+                    return Problem("Invalid CNPJ!");
 
-                if (dto.Name.Length < 3 || dto.Name == "string")
-                    return Problem("Razão Social inválida!");
+                if (dto.Name.Length < 2 || dto.Name == "string")
+                    return Problem("Invalid Name!");
 
                 if (dto.NameOpt == "" || dto.NameOpt == "string")
                     dto.NameOpt = dto.Name;
 
                 var address = await _companyService.RetrieveAdressAPI(dto.Address);
                 if (address == null)
-                    return Problem("CEP Inválido!");
+                    return Problem("Invalid ZipCode!");
 
                 company = new(dto);
                 company.Address = address;
                 company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
 
                 var result = await _companyService.PostCompany(company);
+
+                // Add aircraft
+                if (result != null)
+                {
+                    await _companyService.PostAircraft(dto.Cnpj);
+                }
             }
             catch (Exception ex)
             {
@@ -51,43 +63,6 @@ namespace OnTheFlyAPI.Company.Controllers
             }
 
             return CreatedAtAction("GetByCnpj", new { param = 0, company.Cnpj }, company);
-        }
-
-        [HttpPost("history")]
-        public async Task<ActionResult<Models.Company>> PostHistory(CompanyDTO dto)
-        {
-            Models.Company company;
-            try
-            {
-                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
-                if (dto.Address.ZipCode.Length != 8)
-                    return Problem($"CEP ({dto.Address.ZipCode}) diferente de 8 dígitos!");
-
-                if (!Models.Company.VerificarCnpj(dto.Cnpj))
-                    return Problem("CNPJ Inválido!");
-
-                if (dto.Name.Length < 3 || dto.Name == "string")
-                    return Problem("Razão Social inválida!");
-
-                if (dto.NameOpt == "" || dto.NameOpt == "string")
-                    dto.NameOpt = dto.Name;
-
-                var address = await _companyService.RetrieveAdressAPI(dto.Address);
-                if (address == null)
-                    return Problem("CEP Inválido!");
-
-                company = new(dto);
-                company.Address = address;
-                company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
-
-                var result = await _companyService.PostHistoryCompany(company);
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
-
-            return CreatedAtAction("GetByCnpj", new { param = 1, company.Cnpj }, company);
         }
 
         [HttpGet("{param}")]
@@ -99,11 +74,11 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
+                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
                 }
                 if (company.Count == 0)
                 {
-                    return NotFound("Nao ha companhias cadastradas");
+                    return NotFound("There are no companies registered.");
                 }
                 return Ok(company);
             }
@@ -123,11 +98,11 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
+                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
                 }
                 if (company == null)
                 {
-                    return NotFound("Companhia nao encontrada");
+                    return NotFound("There are no companies registered");
                 }
                 return Ok(company);
             }
@@ -146,11 +121,11 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
+                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
                 }
                 if (company == null)
                 {
-                    return NotFound("Companhia nao encontrada");
+                    return NotFound("There are no companies registered");
                 }
                 return Ok(company);
             }
@@ -161,15 +136,15 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("{Cnpj}")]
-        public async Task<IActionResult> Put(Models.CompanyPatchDTO DTO, string Cnpj)
+        public async Task<IActionResult> Patch(Models.CompanyPatchDTO DTO, string Cnpj)
         {
             try
             {
                 var result = await _companyService.Update(DTO, Cnpj);
                 if (result == null)
-                    return Problem("Companhia não encontrada!");
+                    return Problem("Company not found!");
                 if (result.Restricted)
-                    return Problem("Companhia encontra-se restrita!");
+                    return Problem("Company is currently restricted!");
                 return Ok(result);
             }
             catch (Exception ex)
@@ -179,13 +154,13 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("Status/{Cnpj}")]
-        public async Task<IActionResult> PutStatus(Models.CompanyPatchStatusDTO DTO, string Cnpj)
+        public async Task<IActionResult> PatchStatus(Models.CompanyPatchStatusDTO DTO, string Cnpj)
         {
             try
             {
                 var result = await _companyService.UpdateStatus(DTO, Cnpj);
                 if (result == null)
-                    return Problem("Companhia não encontrada!");
+                    return Problem("Company not found!");
 
                 //todo: fazer get status
 
@@ -205,19 +180,19 @@ namespace OnTheFlyAPI.Company.Controllers
                 var company = await _companyService.GetByCnpj(0, cnpj);
 
                 if (company == null)
-                    return NotFound("Companhia não encontrada!");
+                    return NotFound("Company not found!");
 
                 var inserted = await _companyService.PostHistoryCompany(company);
 
                 if (inserted == null)
-                    return BadRequest("Houve um problema para mover a companhia");
+                    return BadRequest("There was a problem moving the company.");
 
                 var deleted = await _companyService.DeleteCompany(cnpj);
 
                 if (deleted == false)
-                    throw new Exception("Houve um problema para deletar a companhia");
+                    throw new Exception("There was a problem deleting the company");
 
-                return Ok("Deletado com sucesso!");
+                return Ok("Company successfully deleted!");
 
             }
             catch (Exception ex)
@@ -234,19 +209,19 @@ namespace OnTheFlyAPI.Company.Controllers
                 var company = await _companyService.GetByCnpj(1, cnpj);
 
                 if (company == null)
-                    return NotFound("Companhia não encontrada!");
+                    return NotFound("Company not found!");
 
                 var inserted = await _companyService.PostCompany(company);
 
                 if (inserted == null)
-                    return BadRequest("Houve um problema para mover a companhia");
+                    return BadRequest("There was a problem moving the company");
 
                 var deleted = await _companyService.RestorageCompany(cnpj);
 
                 if (deleted == null)
-                    throw new Exception("Houve um problema para restaurar a companhia");
+                    throw new Exception("There was a problem restoring the company");
 
-                return Ok("Restaurado com sucesso!");
+                return Ok("Company successfully restored!");
             }
             catch (Exception ex)
             {
