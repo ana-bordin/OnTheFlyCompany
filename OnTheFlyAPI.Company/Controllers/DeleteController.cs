@@ -19,18 +19,18 @@ namespace OnTheFlyAPI.Company.Controllers
         [HttpDelete]      
         public ActionResult<Models.Company> Delete(string cnpj)
         {
-            var company = _companyService.Get(cnpj);
+            var company = _companyService.GetByCnpj(0, cnpj);
             if (cnpj == null)
                 return NotFound();
             
-            var inserted = _companyHistoryService.Create(company);
+            var inserted = _companyService.PostHistoryCompany(company.Result);
             
             if (inserted == null)
                 return BadRequest();
 
-            _companyService.Delete(cnpj);
+            var deleted = _companyService.Delete(cnpj);
             
-            if (deleted == null)
+            if (deleted == false)
                 return BadRequest();
             
             return Ok(deleted);
@@ -40,19 +40,21 @@ namespace OnTheFlyAPI.Company.Controllers
         [HttpDelete]
         public ActionResult<Models.Company> Restorage(string cnpj)
         {
-            var company = _companyHistoryService.Get(cnpj);
+            var company = _companyService.GetByCnpj(1, cnpj);
             if (cnpj == null)
                 return NotFound();
 
-            var inserted = _companyService.Create(company);
+            var inserted = _companyService.PostCompany(company.Result);
 
             if (inserted == null)
                 return BadRequest();
 
-            var deleted = _companyHistoryService.Delete(cnpj);
+            var deleted = _companyService.Delete(cnpj);
 
             if (deleted == null)
                 return BadRequest();
+
+            return Ok(deleted);
 
         }
     }

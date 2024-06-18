@@ -3,11 +3,11 @@ using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.Company.Services
 {
-    public class CompanyService
+    public class CompanyHistoryService
     {
         private readonly IMongoCollection<Models.Company> _company;
 
-        public CompanyService(ICompanyAPIDataBaseSettings settings)
+        public CompanyHistoryService(ICompanyAPIDataBaseSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
