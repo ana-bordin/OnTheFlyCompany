@@ -158,11 +158,14 @@ namespace OnTheFlyAPI.Company.Controllers
         {
             try
             {
+                var company = await _companyService.GetByCnpj(0, Cnpj);
+                
+                if (company.Restricted == DTO.Restricted)
+                    return Problem("Company status is already " + DTO.Restricted);
+                
                 var result = await _companyService.UpdateStatus(DTO, Cnpj);
                 if (result == null)
                     return Problem("Company not found!");
-
-                //todo: fazer get status
 
                 return Ok(result);
             }
