@@ -33,6 +33,7 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Company> GetByCnpj(int param, string cnpj)
         {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
@@ -46,6 +47,7 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Company> GetByName(int param, string name)
         {
+            name = name.Replace("+", " ");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Name == name).FirstOrDefaultAsync();
@@ -88,6 +90,82 @@ namespace OnTheFlyAPI.Company.Services
             {
                 throw;
             }
+        }
+
+
+        public async Task<Models.Company> PostCompany(Models.Company company)
+        {
+            if (company != null)
+                _companyCollection.InsertOne(company);
+
+            return company;
+        }
+        public async Task<Models.Company> PostHistoryCompany(Models.Company company)
+        {
+            if (company != null)
+                _companyHistoryCollection.InsertOne(company);
+
+            return company;
+        }
+
+
+        public async Task<Models.Company> Update(Models.CompanyPatchDTO DTO, string cnpj)
+        {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            if (company != null)
+            {
+                var filter = Builders<Models.Company>.Filter.Eq("Cnpj", cnpj);
+
+                UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
+                    .Set("NameOpt", DTO.NameOpt)
+                    .Set("Address.Complement", DTO.Complement);
+
+                await _companyCollection.UpdateOneAsync(filter, update);
+
+                return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public async Task<Models.Company> UpdateStatus(Models.CompanyPatchStatusDTO DTO, string cnpj)
+        {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            if (company != null)
+            {
+                var filter = Builders<Models.Company>.Filter.Eq("Cnpj", cnpj);
+                UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
+                    .Set("Restricted", DTO.Restricted);
+
+                await _companyCollection.UpdateOneAsync(filter, update);
+
+                return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
+        public async Task<bool> DeleteCompany(string cnpj)
+        {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var result = _companyCollection.DeleteOne(c => c.Cnpj == cnpj);
+            if (result.DeletedCount > 0)
+                return true;
+            return false;
+        }
+        public async Task<bool> RestorageCompany(string cnpj)
+        {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var result = _companyHistoryCollection.DeleteOne(c => c.Cnpj == cnpj);
+            if (result.DeletedCount > 0)
+                return true;
+            return false;
         }
     }
 }

@@ -18,8 +18,11 @@ namespace OnTheFlyAPI.Company
             builder.Services.AddSingleton<ICompanyAPIDataBaseSettings>(sp =>
             sp.GetRequiredService<IOptions<CompanyAPIDataBaseSettings>>().Value);
 
-            builder.Services.AddSingleton<Get>();
-            builder.Services.AddSingleton<Post>();
+            builder.Services.AddSingleton<CompanyService>();
+
+            //builder.Services.AddSingleton<Put>();
+            builder.Services.AddSingleton<CompanyService>();
+
 
             var app = builder.Build();
 
