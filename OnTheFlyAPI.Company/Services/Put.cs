@@ -16,15 +16,42 @@ namespace OnTheFlyAPI.Company.Services
         public async Task<Models.Company> Update(Models.CompanyPatchDTO DTO, string cnpj)
         {
             cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
-            var filter = Builders<Models.Company>.Filter.Eq("Cnpj", cnpj);
-            UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
-                .Set("NameOpt", DTO.NameOpt)
-                .Set("Restricted", DTO.Restricted)
-                .Set("Address.Complement", DTO.Complement);
+            var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            if (company != null)
+            {
+                var filter = Builders<Models.Company>.Filter.Eq("Cnpj", cnpj);
 
-            var x = await _companyCollection.UpdateOneAsync(filter, update);
-            return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+                UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
+                    .Set("NameOpt", DTO.NameOpt)
+                    .Set("Address.Complement", DTO.Complement);
+
+                await _companyCollection.UpdateOneAsync(filter, update);
+
+                return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            }
+            else
+            {
+                return null;
+            }
         }
+        public async Task<Models.Company> UpdateStatus(Models.CompanyPatchStatusDTO DTO, string cnpj)
+        {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            if (company != null)
+            {
+                var filter = Builders<Models.Company>.Filter.Eq("Cnpj", cnpj);
+                UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
+                    .Set("Restricted", DTO.Restricted);
 
+                await _companyCollection.UpdateOneAsync(filter, update);
+
+                return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 }

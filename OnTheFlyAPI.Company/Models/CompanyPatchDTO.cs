@@ -6,7 +6,6 @@ namespace OnTheFlyAPI.Company.Models
     {
 
         public string NameOpt { get; set; }
-        public bool Restricted { get; set; }
         public string Complement { get; set; }
 
     }
