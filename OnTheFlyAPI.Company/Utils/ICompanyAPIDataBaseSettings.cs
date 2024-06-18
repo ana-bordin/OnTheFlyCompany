@@ -1,12 +1,11 @@
 ﻿namespace OnTheFlyAPI.Company.Utils
 {
-    public class ICompanyAPIDataBaseSettings
+    public interface ICompanyAPIDataBaseSettings
     {
-        string CompanyCollectionName { get; set; }
-        string CompanyHistoryCollectionName { get; set; }
-        string AddressCollectionName { get; set; }
-
-        string ConnectionString { get; set; }
-        string DatabaseName { get; set; }
+        public string CompanyCollectionName { get; set; }
+        public string CompanyHistoryCollectionName { get; set; }
+        public string AddressCollectionName { get; set; }
+        public string ConnectionString { get; set; }
+        public string DatabaseName { get; set; }
     }
 }
