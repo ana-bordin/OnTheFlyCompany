@@ -1,7 +1,9 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 using Newtonsoft.Json;
 using OnTheFlyAPI.Address.Models;
 using OnTheFlyAPI.Company.Utils;
+using System.Text.RegularExpressions;
 
 namespace OnTheFlyAPI.Company.Services
 {
@@ -22,17 +24,18 @@ namespace OnTheFlyAPI.Company.Services
         {
             if (param == 0)
             {
-                return _companyCollection.Find(c => true).ToList();
+                return await _companyCollection.Find(c => true).ToListAsync();
             }
             else if (param == 1)
             {
-                return _companyHistoryCollection.Find(c => true).ToList();
+                return await _companyHistoryCollection.Find(c => true).ToListAsync();
             }
             return null;
         }
 
         public async Task<Models.Company> GetByCnpj(int param, string cnpj)
         {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
@@ -46,6 +49,7 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Company> GetByName(int param, string name)
         {
+            name = name.Replace("+", " ");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Name == name).FirstOrDefaultAsync();
