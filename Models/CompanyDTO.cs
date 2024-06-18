@@ -1,6 +1,4 @@
-﻿using OnTheFlyAPI.Address.Models;
-
-namespace OnTheFlyAPI.Company.Models
+﻿namespace ModelsAux
 {
     public class CompanyDTO
     {
@@ -10,6 +8,6 @@ namespace OnTheFlyAPI.Company.Models
         //public DateOnly DtOpen { get; set; }
         public DateTime DtOpen { get; set; }
         public bool Restricted { get; set; }
-        public OnTheFlyAPI.Address.Models.AddressDTO Address { get; set; }
+        public AddressDTO AddressDTO { get; set; }
     }
 }

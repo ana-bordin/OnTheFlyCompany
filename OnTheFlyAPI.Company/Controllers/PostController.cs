@@ -9,10 +9,12 @@ namespace OnTheFlyAPI.Company.Controllers
     public class PostController : Controller
     {
         private readonly Post _postService;
+        private readonly Get _getService;
 
-        public PostController(Post postService)
+        public PostController(Post postService, Get getService)
         {
             _postService = postService;
+            _getService = getService;
         }
 
         [HttpGet]
@@ -33,13 +35,13 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (!Models.Company.VerificarCnpj(dto.Cnpj))
                     return Problem("CNPJ Inválido!");
-                /*
-                var address = await _addressService.RetrieveAdressAPI(dto.Address);
+                
+                var address = await _getService.RetrieveAdressAPI(dto.Address);
                 if (address == null)
                     return Problem("CEP Inválido!");
-                */
+                
                 company = new(dto);
-                //company.Address = address;
+                company.Address = address;
                 var result = await _postService.PostCompany(company);
             }
             catch (Exception ex)

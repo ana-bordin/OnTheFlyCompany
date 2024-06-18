@@ -20,7 +20,7 @@ builder.Configuration.GetSection(nameof(CompanyAPIDataBaseSettings)));
             builder.Services.AddSingleton<ICompanyAPIDataBaseSettings>(sp =>
             sp.GetRequiredService<IOptions<CompanyAPIDataBaseSettings>>().Value);
 
-            builder.Services.AddSingleton<AddressService>();
+            builder.Services.AddSingleton<AddressesService>();
 
             var app = builder.Build();
 
