@@ -42,7 +42,7 @@ namespace OnTheFlyAPI.Address.Services
                     else
                     {
                         address = null;
-                        Console.WriteLine("Erro no consumo do WS CEP.");
+                        Console.WriteLine("Error at consuming ZipCode WS.");
                         Console.WriteLine(response.StatusCode);
                     }
                 }

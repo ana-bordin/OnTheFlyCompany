@@ -16,200 +16,217 @@ namespace OnTheFlyAPI.Company.Controllers
             _companyService = companyService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<Models.Company>> Get(Models.Company company)
-        {
-            return company;
-        }
-
-        [HttpPost]
+        [HttpPost("post")]
         public async Task<ActionResult<Models.Company>> Post(CompanyDTO dto)
         {
             Models.Company company;
             try
             {
-                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
+                var cnpjaux = string.Join("", dto.Cnpj.Where(Char.IsDigit)); // Somente numeros 
+                if (await _companyService.GetByCnpj(0, cnpjaux) != null)
+                    return Problem("Company is already registered!!");
+                if (await _companyService.GetByCnpj(1, cnpjaux) != null)
+                    return Problem("Company is already registered and it is deleted. Restore it if needed.");
+
+                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Somente numeros
                 if (dto.Address.ZipCode.Length != 8)
-                    return Problem($"CEP ({dto.Address.ZipCode}) diferente de 8 dígitos!");
+                    return Problem($"ZipCode ({dto.Address.ZipCode}) different than 8 digits!");
 
                 if (!Models.Company.VerificarCnpj(dto.Cnpj))
-                    return Problem("CNPJ Inválido!");
+                    return Problem("Invalid CNPJ!");
 
-                if (dto.Name.Length < 3 || dto.Name == "string")
-                    return Problem("Razão Social inválida!");
+                if (dto.Name.Length < 2 || dto.Name == "string")
+                    return Problem("Invalid Name!");
 
                 if (dto.NameOpt == "" || dto.NameOpt == "string")
                     dto.NameOpt = dto.Name;
 
                 var address = await _companyService.RetrieveAdressAPI(dto.Address);
                 if (address == null)
-                    return Problem("CEP Inválido!");
+                    return Problem("Invalid ZipCode!");
 
                 company = new(dto);
                 company.Address = address;
                 company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
+
                 var result = await _companyService.PostCompany(company);
+
+                // Add aircraft
+                if (result != null)
+                {
+                    await _companyService.PostAircraft(dto.Cnpj);
+                }
             }
             catch (Exception ex)
             {
                 return Problem(ex.Message);
             }
 
-            return CreatedAtAction("Get", company, company);
-        }
-
-        [HttpPost("history")]
-        public async Task<ActionResult<Models.Company>> PostHistory(CompanyDTO dto)
-        {
-            Models.Company company;
-            try
-            {
-                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Formata pra vir apenas números do CEP
-                if (dto.Address.ZipCode.Length != 8)
-                    return Problem($"CEP ({dto.Address.ZipCode}) diferente de 8 dígitos!");
-
-                if (!Models.Company.VerificarCnpj(dto.Cnpj))
-                    return Problem("CNPJ Inválido!");
-
-                if (dto.Name.Length < 3 || dto.Name == "string")
-                    return Problem("Razão Social inválida!");
-
-                if (dto.NameOpt == "" || dto.NameOpt == "string")
-                    dto.NameOpt = dto.Name;
-
-                var address = await _companyService.RetrieveAdressAPI(dto.Address);
-                if (address == null)
-                    return Problem("CEP Inválido!");
-
-                company = new(dto);
-                company.Address = address;
-                company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
-                var result = await _companyService.PostHistoryCompany(company);
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
-
-            return CreatedAtAction("Get", company, company);
+            return CreatedAtAction("GetByCnpj", new { param = 0, company.Cnpj }, company);
         }
 
         [HttpGet("{param}")]
         public async Task<ActionResult<List<Models.Company>>> GetAll(int param)
         {
-            var company = await _companyService.GetAll(param);
+            try
+            {
+                var company = await _companyService.GetAll(param);
 
-            if (param != 0 && param != 1)
-            {
-                return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
+                if (param != 0 && param != 1)
+                {
+                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                }
+                if (company.Count == 0)
+                {
+                    return NotFound("There are no companies registered.");
+                }
+                return Ok(company);
             }
-            if (company.Count == 0)
+            catch (Exception ex)
             {
-                return NotFound("Nao ha companhias cadastradas");
+                return Problem(ex.Message);
             }
-            return Ok(company);
+
         }
 
         [HttpGet("cnpj/{param}/{cnpj}")]
         public async Task<ActionResult<Models.Company>> GetByCnpj(int param, string cnpj)
         {
-            var company = await _companyService.GetByCnpj(param, cnpj);
+            try
+            {
+                var company = await _companyService.GetByCnpj(param, cnpj);
 
-            if (param != 0 && param != 1)
-            {
-                return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
+                if (param != 0 && param != 1)
+                {
+                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                }
+                if (company == null)
+                {
+                    return NotFound("There are no companies registered");
+                }
+                return Ok(company);
             }
-            if (company == null)
+            catch (Exception ex)
             {
-                return NotFound("Companhia nao encontrada");
+                return Problem(ex.Message);
             }
-            return Ok(company);
         }
 
         [HttpGet("name/{param}/{name}")]
         public async Task<ActionResult<Models.Company>> GetByName(int param, string name)
         {
-            var company = await _companyService.GetByName(param, name);
+            try
+            {
+                var company = await _companyService.GetByName(param, name);
 
-            if (param != 0 && param != 1)
-            {
-                return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
+                if (param != 0 && param != 1)
+                {
+                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                }
+                if (company == null)
+                {
+                    return NotFound("There are no companies registered");
+                }
+                return Ok(company);
             }
-            if (company == null)
+            catch (Exception ex)
             {
-                return NotFound("Companhia nao encontrada");
+                return Problem(ex.Message);
             }
-            return Ok(company);
         }
 
         [HttpPatch("{Cnpj}")]
-        public async Task<IActionResult> Put(Models.CompanyPatchDTO DTO, string Cnpj)
+        public async Task<IActionResult> Patch(Models.CompanyPatchDTO DTO, string Cnpj)
         {
-            var result = await _companyService.Update(DTO, Cnpj);
-            if (result == null)
-                return Problem("Companhia não encontrada!");
-            if (result.Restricted)
-                return Problem("Companhia encontra-se restrita!");
-            return Ok(result);
+            try
+            {
+                var result = await _companyService.Update(DTO, Cnpj);
+                if (result == null)
+                    return Problem("Company not found!");
+                if (result.Restricted)
+                    return Problem("Company is currently restricted!");
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpPatch("Status/{Cnpj}")]
-        public async Task<IActionResult> PutStatus(Models.CompanyPatchStatusDTO DTO, string Cnpj)
+        public async Task<IActionResult> PatchStatus(Models.CompanyPatchStatusDTO DTO, string Cnpj)
         {
+            try
+            {
+                var result = await _companyService.UpdateStatus(DTO, Cnpj);
+                if (result == null)
+                    return Problem("Company not found!");
 
-            var result = await _companyService.UpdateStatus(DTO, Cnpj);
-            if (result == null)
-                return Problem("Companhia não encontrada!");
+                //todo: fazer get status
 
-            //todo: fazer get status
-
-            return Ok(result);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpDelete("delete/{cnpj}")]
-        public ActionResult<Models.Company> Delete(string cnpj)
+        public async Task<ActionResult<Models.Company>> Delete(string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
-            var companyResult = _companyService.GetByCnpj(0, cnpj);
-            if (company.Result == null)
-                return NotFound("Companhia não encontrada!");
+            try
+            {
+                var company = await _companyService.GetByCnpj(0, cnpj);
 
-            Models.Company company = companyResult.Result;
+                if (company == null)
+                    return NotFound("Company not found!");
 
-            var inserted = _companyService.PostHistoryCompany(company);
+                var inserted = await _companyService.PostHistoryCompany(company);
 
-            if (inserted == null)
-                return BadRequest("Houve um problema para mover a companhia");
+                if (inserted == null)
+                    return BadRequest("There was a problem moving the company.");
 
-            var deleted = _companyService.DeleteCompany(cnpj);
+                var deleted = await _companyService.DeleteCompany(cnpj);
 
-            if (deleted == false)
-                return BadRequest("Houve um problema para deletar a companhia");
+                if (deleted == false)
+                    throw new Exception("There was a problem deleting the company");
 
-            return Ok("Deletado com sucesso!");
+                return Ok("Company successfully deleted!");
 
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpDelete("restorage/{cnpj}")]
-        public ActionResult<Models.Company> Restorage(string cnpj)
+        public async Task<ActionResult<Models.Company>> Restorage(string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
-            var company = _companyService.GetByCnpj(1, cnpj);
-            if (company.Result == null)
-                return NotFound("Companhia não encontrada!");
+            try
+            {
+                var company = await _companyService.GetByCnpj(1, cnpj);
 
-            var inserted = _companyService.PostCompany(company.Result);
+                if (company == null)
+                    return NotFound("Company not found!");
 
-            if (inserted == null)
-                return BadRequest("Houve um problema para mover a companhia");
+                var inserted = await _companyService.PostCompany(company);
 
-            var deleted = _companyService.RestorageCompany(cnpj);
+                if (inserted == null)
+                    return BadRequest("There was a problem moving the company");
 
-            if (deleted == null)
-                return BadRequest("Houve um problema para restaurar a companhia");
+                var deleted = await _companyService.RestorageCompany(cnpj);
 
-            return Ok("Restaurado com sucesso!");
+                if (deleted == null)
+                    throw new Exception("There was a problem restoring the company");
 
+                return Ok("Company successfully restored!");
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
     }
 }
