@@ -10,6 +10,7 @@ namespace OnTheFlyAPI.Company.Controllers
     public class CompanyController : Controller
     {
         private readonly CompanyService _companyService;
+        private readonly AddressesService _addressService;
         public CompanyController(CompanyService companyService)
         {
             _companyService = companyService;
@@ -217,6 +218,7 @@ namespace OnTheFlyAPI.Company.Controllers
                     throw new Exception("Houve um problema para deletar a companhia");
 
                 return Ok("Deletado com sucesso!");
+
             }
             catch (Exception ex)
             {

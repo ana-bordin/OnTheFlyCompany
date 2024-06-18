@@ -11,9 +11,8 @@ namespace OnTheFlyAPI.Company
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
-
             builder.Services.Configure<CompanyAPIDataBaseSettings>(
-    builder.Configuration.GetSection(nameof(CompanyAPIDataBaseSettings)));
+            builder.Configuration.GetSection(nameof(CompanyAPIDataBaseSettings)));
 
             builder.Services.AddSingleton<ICompanyAPIDataBaseSettings>(sp =>
             sp.GetRequiredService<IOptions<CompanyAPIDataBaseSettings>>().Value);

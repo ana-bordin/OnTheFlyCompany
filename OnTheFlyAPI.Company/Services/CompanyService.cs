@@ -5,12 +5,12 @@ using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.Company.Services
 {
-    public class Get
+    public class CompanyService
     {
         private readonly IMongoCollection<Models.Company> _companyCollection;
         private readonly IMongoCollection<Models.Company> _companyHistoryCollection;
 
-        public Get(ICompanyAPIDataBaseSettings settings)
+        public CompanyService(ICompanyAPIDataBaseSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
@@ -30,7 +30,6 @@ namespace OnTheFlyAPI.Company.Services
             }
             return null;
         }
-
         public async Task<Models.Company> GetByCnpj(int param, string cnpj)
         {
             cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
@@ -44,7 +43,6 @@ namespace OnTheFlyAPI.Company.Services
             }
             return null;
         }
-
         public async Task<Models.Company> GetByName(int param, string name)
         {
             name = name.Replace("+", " ");
@@ -58,7 +56,8 @@ namespace OnTheFlyAPI.Company.Services
             }
             return null;
         }
-
+        
+        
         public async Task<Address.Models.Address> RetrieveAdressAPI(AddressDTO dto)
         {
             Address.Models.Address address;
