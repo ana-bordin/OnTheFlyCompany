@@ -3,7 +3,7 @@ using OnTheFlyAPI.Company.Services;
 
 namespace OnTheFlyAPI.Company.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/get")]
     [ApiController]
     public class GetController : Controller
     {
@@ -21,11 +21,11 @@ namespace OnTheFlyAPI.Company.Controllers
 
             if (param != 0 && param != 1)
             {
-                return BadRequest("Parametro deve ser 0 ou 1");
+                return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
             }
             if (company.Count == 0)
             {
-                return BadRequest("Nao ha companhias cadastradas");
+                return NotFound("Nao ha companhias cadastradas");
             }
             return Ok(company);
         }
@@ -34,11 +34,11 @@ namespace OnTheFlyAPI.Company.Controllers
         [HttpGet("cnpj/{param}/{cnpj}")]
         public async Task<ActionResult<Models.Company>> GetByCnpj(int param, string cnpj)
         {
-            var company = _getService.GetByCnpj(param, cnpj);
+            var company = await _getService.GetByCnpj(param, cnpj);
 
             if (param != 0 && param != 1)
             {
-                return BadRequest("Parametro deve ser 0 ou 1");
+                return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
             }
             if (company == null)
             {
@@ -54,7 +54,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
             if (param != 0 && param != 1)
             {
-                return BadRequest("Parametro deve ser 0 ou 1");
+                return BadRequest("Parametro deve ser 0 (Companhias sem restricao) ou 1 (Companhias com restricao)");
             }
             if (company == null)
             {
