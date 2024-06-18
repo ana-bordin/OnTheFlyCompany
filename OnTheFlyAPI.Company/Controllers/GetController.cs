@@ -3,6 +3,8 @@ using OnTheFlyAPI.Company.Services;
 
 namespace OnTheFlyAPI.Company.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class GetController : Controller
     {
         private readonly Get _getService;
@@ -12,19 +14,26 @@ namespace OnTheFlyAPI.Company.Controllers
             _getService = getService;
         }
 
-        public async Task<List<Models.Company>> GetAll(int param)
-        {
-            return await _getService.GetAll(param);
-        }
+        [HttpGet("{param}")]
+        public async Task<List<Models.Company>> GetAll(int param) => await _getService.GetAll(param);
 
-        public async Task<Models.Company> GetByCnpj(int param, string cnpj)
-        {
-            return await _getService.GetByCnpj(param, cnpj);
-        }
 
-        public async Task<Models.Company> GetByName(int param, string name)
+        [HttpGet("{param},{value}")]
+        public async Task<ActionResult<Models.Company>> Get(int param, string value)
         {
-            return await _getService.GetByCnpj(param, name);
+            value = value.Replace("+", " ");
+            Models.Company company;
+            company = await _getService.GetByCnpj(param, value);
+
+            if (company == null)
+            {
+                company = await _getService.GetByName(param, value);
+            }
+            if (company == null)
+            {
+                return NotFound("Companhia nao encontrada");
+            }
+            return company;
         }
     }
 }
