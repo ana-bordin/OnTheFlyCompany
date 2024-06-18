@@ -23,5 +23,13 @@ namespace OnTheFlyAPI.Company.Services
 
             return company;
         }
+
+        public async Task<Models.Company> PostHistoryCompany(Models.Company company)
+        {
+            if (company != null)
+                _companyHistoryCollection.InsertOne(company);
+
+            return company;
+        }
     }
 }
