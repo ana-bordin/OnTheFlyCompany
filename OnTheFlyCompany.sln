@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyAPI.Company", "OnTheFlyAPI.Company\OnTheFlyAPI.Company.csproj", "{E49F7400-024C-41B6-8083-BF48A504C2D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyAPI.Company", "OnTheFlyAPI.Company\OnTheFlyAPI.Company.csproj", "{E49F7400-024C-41B6-8083-BF48A504C2D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyAPI.Address", "OnTheFlyAPI.Address\OnTheFlyAPI.Address.csproj", "{75F0CAEA-FC49-42C8-8097-8E7AEFD69295}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyAPI.Address", "OnTheFlyAPI.Address\OnTheFlyAPI.Address.csproj", "{75F0CAEA-FC49-42C8-8097-8E7AEFD69295}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

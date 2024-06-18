@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace OnTheFlyAPI.Company.Models
+namespace ModelsAux
 {
     public class Company
     {
@@ -11,7 +11,7 @@ namespace OnTheFlyAPI.Company.Models
         //public DateOnly DtOpen { get; set; }
         public DateTime DtOpen { get; set; }
         public bool Restricted { get; set; }
-        public OnTheFlyAPI.Address.Models.Address Address { get; set; }
+        public Address Address { get; set; }
 
         public Company()
         {
