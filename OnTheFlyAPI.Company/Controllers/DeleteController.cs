@@ -22,19 +22,19 @@ namespace OnTheFlyAPI.Company.Controllers
             cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             var companyResult = _companyService.GetByCnpj(0, cnpj);
             if (cnpj == null)
-                return NotFound();
+                return NotFound("Companhia não encontrada!");
             
             Models.Company company = companyResult.Result;
 
             var inserted = _companyService.PostHistoryCompany(company);
             
             if (inserted == null)
-                return BadRequest();
+                return BadRequest("Houve um problema para mover a companhia");
 
             var deleted = _companyService.DeleteCompany(cnpj);
             
             if (deleted == false)
-                return BadRequest();
+                return BadRequest("Houve um problema para deletar a companhia");
             
             return Ok(deleted);
             
@@ -46,17 +46,17 @@ namespace OnTheFlyAPI.Company.Controllers
             cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             var company = _companyService.GetByCnpj(1, cnpj);
             if (cnpj == null)
-                return NotFound();
+                return NotFound("Companhia não encontrada!");
 
             var inserted = _companyService.PostCompany(company.Result);
 
             if (inserted == null)
-                return BadRequest();
+                return BadRequest("Houve um problema para mover a companhia");
 
             var deleted = _companyService.DeleteCompany(cnpj);
 
             if (deleted == null)
-                return BadRequest();
+                return BadRequest("Houve um problema para restaurar a companhia");
 
             return Ok(deleted);
 
