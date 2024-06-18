@@ -3,6 +3,8 @@ using OnTheFlyAPI.Company.Services;
 
 namespace OnTheFlyAPI.Company.Controllers
 {
+    [Route("api/update")]
+    [ApiController]
     public class PutController : Controller
     {
         private readonly Put _putService;
@@ -11,13 +13,14 @@ namespace OnTheFlyAPI.Company.Controllers
             _putService = putService;
         }
 
-        [HttpPut("{Cnpj}")]
-        public async Task<IActionResult> Put(Models.Company company)
-        { 
-            _putService.Update(company);
-            return Ok(company);
+
+        [HttpPatch("{Cnpj}")]
+        public async Task<IActionResult> Put(Models.CompanyPatchDTO DTO, string Cnpj)
+        {
+            var result = await _putService.Update(DTO, Cnpj);
+            return Ok(result);
         }
 
-        
+
     }
 }

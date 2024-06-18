@@ -13,11 +13,17 @@ namespace OnTheFlyAPI.Company.Services
             _companyCollection = database.GetCollection<Models.Company>(settings.CompanyCollectionName);
 
         }
-        public async Task<Models.Company> Update(Models.Company company) 
-        { 
-            _companyCollection.ReplaceOne(c => c.Cnpj == company.Cnpj, company);
+        public async Task<Models.Company> Update(Models.CompanyPatchDTO DTO, string cnpj)
+        {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            var filter = Builders<Models.Company>.Filter.Eq("Cnpj", cnpj);
+            UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
+                .Set("NameOpt", DTO.NameOpt)
+                .Set("Restricted", DTO.Restricted)
+                .Set("Address.Complement", DTO.Complement);
 
-            return company;
+            var x = await _companyCollection.UpdateOneAsync(filter, update);
+            return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
         }
 
     }
