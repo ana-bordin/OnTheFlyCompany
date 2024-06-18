@@ -114,5 +114,12 @@ namespace OnTheFlyAPI.Company.Services
                 return true;
             return false;
         }
+        public bool RestorageCompany(string cnpj)
+        {
+            var result = _companyHistoryCollection.DeleteOne(c => c.Cnpj == cnpj);
+            if (result.DeletedCount > 0)
+                return true;
+            return false;
+        }
     }
 }

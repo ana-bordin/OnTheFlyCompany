@@ -36,7 +36,7 @@ namespace OnTheFlyAPI.Company.Controllers
             if (deleted == false)
                 return BadRequest("Houve um problema para deletar a companhia");
             
-            return Ok(deleted);
+            return Ok("Deletado com sucesso!");
             
         }
 
@@ -53,12 +53,12 @@ namespace OnTheFlyAPI.Company.Controllers
             if (inserted == null)
                 return BadRequest("Houve um problema para mover a companhia");
 
-            var deleted = _companyService.DeleteCompany(cnpj);
+            var deleted = _companyService.RestorageCompany(cnpj);
 
             if (deleted == null)
                 return BadRequest("Houve um problema para restaurar a companhia");
 
-            return Ok(deleted);
+            return Ok("Restaurado com sucesso!");
 
         }
     }

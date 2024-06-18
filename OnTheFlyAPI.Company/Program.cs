@@ -21,7 +21,6 @@ namespace OnTheFlyAPI.Company
             builder.Services.AddSingleton<Get>();
             builder.Services.AddSingleton<Post>();
             builder.Services.AddSingleton<Delete>();
-            builder.Services.AddSingleton<CompanyHistoryService>();
 
             var app = builder.Build();
 
