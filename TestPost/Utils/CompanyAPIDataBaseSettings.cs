@@ -1,4 +1,4 @@
-﻿namespace OnTheFlyAPI.Company.Utils
+﻿namespace TestPost.Utils
 {
     public class CompanyAPIDataBaseSettings : ICompanyAPIDataBaseSettings
     {

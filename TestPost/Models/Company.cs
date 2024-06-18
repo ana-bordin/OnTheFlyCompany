@@ -1,6 +1,8 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using System.Runtime.ConstrainedExecution;
+using TestPost.Models;
 
-namespace OnTheFlyAPI.Company.Models
+namespace TestPost
 {
     public class Company
     {
@@ -11,7 +13,7 @@ namespace OnTheFlyAPI.Company.Models
         //public DateOnly DtOpen { get; set; }
         public DateTime DtOpen { get; set; }
         public bool Restricted { get; set; }
-        public OnTheFlyAPI.Address.Models.Address Address { get; set; }
+        public Address Address { get; set; }
 
         public Company()
         {
@@ -27,6 +29,12 @@ namespace OnTheFlyAPI.Company.Models
             this.Restricted = dto.Restricted;
         }
 
+
+        /// <summary>
+        /// Verifica se o CNPJ é válido.
+        /// </summary>
+        /// <param name="cnpj">O CNPJ a ser verificado.</param>
+        /// <returns>True se o CNPJ for válido, False caso contrário.</returns>
         public static bool VerificarCnpj(string cnpj)
         {
             cnpj = string.Join("", cnpj.Where(Char.IsDigit));
@@ -40,6 +48,11 @@ namespace OnTheFlyAPI.Company.Models
             return !repetido && digitoUm && digitoDois;
         }
 
+        /// <summary>
+        /// Valida o primeiro dígito verificador do CNPJ.
+        /// </summary>
+        /// <param name="str">O CNPJ a ser validado.</param>
+        /// <returns>True se o dígito for válido, False caso contrário.</returns>
         private static bool ValidacaoDigitoUm(string str)
         {
             int total = 0;
@@ -65,6 +78,11 @@ namespace OnTheFlyAPI.Company.Models
             return false;
         }
 
+        /// <summary>
+        /// Valida o segundo dígito verificador do CNPJ.
+        /// </summary>
+        /// <param name="cnpj">O CNPJ a ser validado.</param>
+        /// <returns>True se o dígito for válido, False caso contrário.</returns>
         private static bool ValidacaoDigitoDois(string cnpj)
         {
             int total = 0;
@@ -89,6 +107,11 @@ namespace OnTheFlyAPI.Company.Models
             return false;
         }
 
+        /// <summary>
+        /// Verifica se há dígitos repetidos no CNPJ.
+        /// </summary>
+        /// <param name="cnpj">O CNPJ a ser verificado.</param>
+        /// <returns>True se houver dígitos repetidos, False caso contrário.</returns>
         private static bool IsRepetido(string cnpj)
         {
             cnpj = RemoverCaractere(cnpj);
@@ -106,6 +129,11 @@ namespace OnTheFlyAPI.Company.Models
             return nroRepetidos == cnpj.Length - 1;
         }
 
+        /// <summary>
+        /// Remove caracteres especiais do CNPJ.
+        /// </summary>
+        /// <param name="cnpj">O CNPJ a ser formatado.</param>
+        /// <returns>O CNPJ formatado.</returns>
         public static string RemoverCaractere(string cnpj)
         {
             cnpj = cnpj.Replace(".", "");

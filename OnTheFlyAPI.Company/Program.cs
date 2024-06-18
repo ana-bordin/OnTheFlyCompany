@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using OnTheFlyAPI.Company.Services;
 using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.Company
@@ -9,31 +10,22 @@ namespace OnTheFlyAPI.Company
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-
-            var app = builder.Build();
-
-            //
             builder.Services.AddControllers();
 
             builder.Services.Configure<CompanyAPIDataBaseSettings>(
-                           builder.Configuration.GetSection(nameof(CompanyAPIDataBaseSettings)));
+    builder.Configuration.GetSection(nameof(CompanyAPIDataBaseSettings)));
 
             builder.Services.AddSingleton<ICompanyAPIDataBaseSettings>(sp =>
-                sp.GetRequiredService<IOptions<CompanyAPIDataBaseSettings>>().Value);
+            sp.GetRequiredService<IOptions<CompanyAPIDataBaseSettings>>().Value);
 
-            builder.Services.AddSingleton<CustomerService>();
-            builder.Services.AddSingleton<AddressService>();
+            builder.Services.AddSingleton<Get>();
+            builder.Services.AddSingleton<Post>();
 
-
-            // Configure the HTTP request pipeline.
+            var app = builder.Build();
 
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
