@@ -1,6 +1,6 @@
 ﻿namespace OnTheFlyAPI.Company.Utils
 {
-    public class CompanyAPIDataBaseSettings
+    public class CompanyAPIDataBaseSettings : ICompanyAPIDataBaseSettings
     {
         public string CompanyCollectionName { get; set; }
         public string CompanyHistoryCollectionName { get; set; }
