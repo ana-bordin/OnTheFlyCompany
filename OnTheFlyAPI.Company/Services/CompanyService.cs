@@ -32,6 +32,7 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<Models.Company> GetByCnpj(int param, string cnpj)
         {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
@@ -44,6 +45,7 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<Models.Company> GetByName(int param, string name)
         {
+            name = name.Replace("+", " ");
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Name == name).FirstOrDefaultAsync();
@@ -148,15 +150,17 @@ namespace OnTheFlyAPI.Company.Services
         }
 
 
-        public bool DeleteCompany(string cnpj)
+        public async Task<bool> DeleteCompany(string cnpj)
         {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             var result = _companyCollection.DeleteOne(c => c.Cnpj == cnpj);
             if (result.DeletedCount > 0)
                 return true;
             return false;
         }
-        public bool RestorageCompany(string cnpj)
+        public async Task<bool> RestorageCompany(string cnpj)
         {
+            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
             var result = _companyHistoryCollection.DeleteOne(c => c.Cnpj == cnpj);
             if (result.DeletedCount > 0)
                 return true;
