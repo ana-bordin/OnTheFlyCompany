@@ -64,7 +64,7 @@ namespace OnTheFlyAPI.Company.Services
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    string url = "https://localhost:7065/api/endereco/";
+                    string url = "https://localhost:7065/api/address/";
                     string jsonAddress = JsonConvert.SerializeObject(dto);
 
                     var content = new StringContent(jsonAddress, System.Text.Encoding.UTF8, "application/json");

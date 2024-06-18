@@ -35,13 +35,20 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (!Models.Company.VerificarCnpj(dto.Cnpj))
                     return Problem("CNPJ Inválido!");
-                
+
+                if(dto.Name.Length < 3 || dto.Name == "string")
+                    return Problem("Razão Social inválida!");
+
+                if (dto.NameOpt == "" || dto.NameOpt == "string")
+                    dto.NameOpt = dto.Name;
+
                 var address = await _getService.RetrieveAdressAPI(dto.Address);
                 if (address == null)
                     return Problem("CEP Inválido!");
                 
                 company = new(dto);
                 company.Address = address;
+                company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
                 var result = await _postService.PostCompany(company);
             }
             catch (Exception ex)
