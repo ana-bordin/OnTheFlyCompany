@@ -33,11 +33,11 @@ namespace OnTheFlyAPI.Address.Services
                         addressAPI = JsonConvert.DeserializeObject<Models.AddressAPI>(json);
                         address.ZipCode = addressDTO.ZipCode;
                         address.Number = addressDTO.Number;
-                        address.Complement = addressAPI.Complement;
+                        //address.Complement = addressAPI.Complement;
+                        address.Complement = addressDTO.Complement;
                         address.City = addressAPI.City;
                         address.State = addressAPI.State;
                         address.Street = addressAPI.Street;
-
                     }
                     else
                     {

@@ -24,7 +24,8 @@ namespace OnTheFlyAPI.Address.Controllers
             if (address == null)
             {
                 return NotFound();
-            } else
+            }
+            else
             {
                 return Ok(address);
             }
