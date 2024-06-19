@@ -1,4 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
+using System.ComponentModel.DataAnnotations;
 
 namespace OnTheFlyAPI.Company.Models
 {
@@ -8,7 +10,6 @@ namespace OnTheFlyAPI.Company.Models
         public string Cnpj { get; set; }
         public string Name { get; set; }
         public string NameOpt { get; set; }
-        //public DateOnly DtOpen { get; set; }
         public DateTime DtOpen { get; set; }
         public bool Restricted { get; set; }
         public OnTheFlyAPI.Address.Models.Address Address { get; set; }
@@ -27,72 +28,72 @@ namespace OnTheFlyAPI.Company.Models
             this.Restricted = dto.Restricted;
         }
 
-        public static bool VerificarCnpj(string cnpj)
+        public static bool VerifyCNPJ(string cnpj)
         {
             cnpj = string.Join("", cnpj.Where(Char.IsDigit));
 
             if (cnpj.Length != 14) return false;
 
-            bool repetido = IsRepetido(cnpj);
-            bool digitoUm = ValidacaoDigitoUm(cnpj);
-            bool digitoDois = ValidacaoDigitoDois(cnpj);
+            bool repeated = IsRepeated(cnpj);
+            bool firstDigit = ValidateFirstDigit(cnpj);
+            bool secondDigit = ValidateSecondDigit(cnpj);
 
-            return !repetido && digitoUm && digitoDois;
+            return !repeated && firstDigit && secondDigit;
         }
 
-        private static bool ValidacaoDigitoUm(string str)
+        private static bool ValidateFirstDigit(string str)
         {
             int total = 0;
-            int[] nrosMultiplicadores = { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplierNumbers = { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
 
             for (int i = 0; i < 12; i++)
             {
-                string digitoStr = str.Substring(i, 1);
-                int digito = int.Parse(digitoStr);
+                string strDigit = str.Substring(i, 1);
+                int digit = int.Parse(strDigit);
 
-                total += digito * nrosMultiplicadores[i];
+                total += digit * multiplierNumbers[i];
             }
 
-            int resto = total % 11;
-            int digitoUm = int.Parse(str.Substring(12, 1));
+            int rest = total % 11;
+            int firstDigit = int.Parse(str.Substring(12, 1));
 
-            if ((resto == 0 || resto == 1) && digitoUm == 0)
+            if ((rest == 0 || rest == 1) && firstDigit == 0)
                 return true;
 
-            if ((resto >= 2 && resto <= 10) && digitoUm == 11 - resto)
+            if ((rest >= 2 && rest <= 10) && firstDigit == 11 - rest)
                 return true;
 
             return false;
         }
 
-        private static bool ValidacaoDigitoDois(string cnpj)
+        private static bool ValidateSecondDigit(string cnpj)
         {
             int total = 0;
-            int[] nrosMultiplicadores = { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplierNumbers = { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
             for (int i = 0; i < 13; i++)
             {
-                string digitoStr = cnpj.Substring(i, 1);
-                int digito = int.Parse(digitoStr);
+                string strDigit = cnpj.Substring(i, 1);
+                int digit = int.Parse(strDigit);
 
-                total += digito * nrosMultiplicadores[i];
+                total += digit * multiplierNumbers[i];
             }
 
-            int resto = total % 11;
-            int digitoDois = int.Parse(cnpj.Substring(13, 1));
+            int rest = total % 11;
+            int secondDigit = int.Parse(cnpj.Substring(13, 1));
 
-            if ((resto == 0 || resto == 1) && digitoDois == 0)
+            if ((rest == 0 || rest == 1) && secondDigit == 0)
                 return true;
 
-            if ((resto >= 2 && resto <= 10) && digitoDois == 11 - resto)
+            if ((rest >= 2 && rest <= 10) && secondDigit == 11 - rest)
                 return true;
 
             return false;
         }
 
-        private static bool IsRepetido(string cnpj)
+        private static bool IsRepeated(string cnpj)
         {
-            cnpj = RemoverCaractere(cnpj);
-            int nroRepetidos = 0;
+            cnpj = RemoveMask(cnpj);
+            int repeatedNumbers = 0;
             for (int i = 0; i < cnpj.Length - 1; i++)
             {
                 int n1 = int.Parse(cnpj.Substring(i, 1));
@@ -100,13 +101,13 @@ namespace OnTheFlyAPI.Company.Models
 
                 if (n1 == n2)
                 {
-                    nroRepetidos++;
+                    repeatedNumbers++;
                 }
             }
-            return nroRepetidos == cnpj.Length - 1;
+            return repeatedNumbers == cnpj.Length - 1;
         }
 
-        public static string RemoverCaractere(string cnpj)
+        public static string RemoveMask(string cnpj)
         {
             cnpj = cnpj.Replace(".", "");
             cnpj = cnpj.Replace("/", "");
@@ -114,5 +115,9 @@ namespace OnTheFlyAPI.Company.Models
             return cnpj;
         }
 
+        public static string InsertMask(string cnpj)
+        {
+            return Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+        }
     }
 }

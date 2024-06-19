@@ -27,5 +27,17 @@ namespace OnTheFlyAPI.Address.Models
             this.ZipCode = dto.ZipCode;
             this.Number = dto.Number;
         }
+
+        public static string RemoveMask(string zipcode)
+        {
+            zipcode = zipcode.Replace(".", "");
+            zipcode = zipcode.Replace("-", "");
+            return zipcode;
+        }
+
+        public static string InsertMask(string zipcode)
+        {
+            return Convert.ToUInt64(zipcode).ToString(@"00\.000\-000");
+        }
     }
 }

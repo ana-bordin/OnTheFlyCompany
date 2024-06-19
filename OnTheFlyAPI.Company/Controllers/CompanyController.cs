@@ -10,7 +10,6 @@ namespace OnTheFlyAPI.Company.Controllers
     public class CompanyController : Controller
     {
         private readonly CompanyService _companyService;
-        private readonly AddressesService _addressService;
         public CompanyController(CompanyService companyService)
         {
             _companyService = companyService;
@@ -22,32 +21,40 @@ namespace OnTheFlyAPI.Company.Controllers
             Models.Company company;
             try
             {
-                var cnpjaux = string.Join("", dto.Cnpj.Where(Char.IsDigit)); // Somente numeros 
+                var cnpjaux = Models.Company.RemoveMask(dto.Cnpj);
                 if (await _companyService.GetByCnpj(0, cnpjaux) != null)
                     return Problem("Company is already registered!!");
                 if (await _companyService.GetByCnpj(1, cnpjaux) != null)
                     return Problem("Company is already registered and it is deleted. Restore it if needed.");
 
-                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Somente numeros
+                dto.Address.ZipCode = Address.Models.Address.RemoveMask(dto.Address.ZipCode);
+
                 if (dto.Address.ZipCode.Length != 8)
                     return Problem($"ZipCode ({dto.Address.ZipCode}) different than 8 digits!");
 
-                if (!Models.Company.VerificarCnpj(dto.Cnpj))
+                if (!Models.Company.VerifyCNPJ(dto.Cnpj))
                     return Problem("Invalid CNPJ!");
 
                 if (dto.Name.Length < 2 || dto.Name == "string")
-                    return Problem("Invalid Name!");
+                    return Problem("Name too short!");
+
+                if (dto.Name.Length > 30)
+                    return Problem("Name too long!");
+
+                if (dto.DtOpen > DateTime.Now)
+                    return Problem("Date of opening cannot be newer than current date!");
 
                 if (dto.NameOpt == "" || dto.NameOpt == "string")
                     dto.NameOpt = dto.Name;
 
                 var address = await _companyService.RetrieveAdressAPI(dto.Address);
+
                 if (address == null)
                     return Problem("Invalid ZipCode!");
 
                 company = new(dto);
                 company.Address = address;
-                company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
+                company.Address.ZipCode = Address.Models.Address.RemoveMask(company.Address.ZipCode);
 
                 var result = await _companyService.PostCompany(company);
 
@@ -74,7 +81,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                    return BadRequest("Parameter must be 0 (Companies registered) or 1 (Companies excludeds)");
                 }
                 if (company.Count == 0)
                 {
@@ -86,7 +93,6 @@ namespace OnTheFlyAPI.Company.Controllers
             {
                 return Problem(ex.Message);
             }
-
         }
 
         [HttpGet("cnpj/{param}/{cnpj}")]
@@ -98,7 +104,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                    return BadRequest("Parameter must be 0 (Companies registered) or 1 (Companies excludeds)");
                 }
                 if (company == null)
                 {
@@ -121,7 +127,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                    return BadRequest("Parameter must be 0 (Companies registered) or 1 (Companies excludeds)");
                 }
                 if (company == null)
                 {
@@ -136,15 +142,41 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("{Cnpj}")]
-        public async Task<IActionResult> Patch(Models.CompanyPatchDTO DTO, string Cnpj)
+        public async Task<IActionResult> Patch(CompanyPatchDTO DTO, string Cnpj)
         {
             try
             {
-                var result = await _companyService.Update(DTO, Cnpj);
-                if (result == null)
-                    return Problem("Company not found!");
-                if (result.Restricted)
+                var company = await _companyService.GetByCnpj(0, Cnpj);
+
+                if(company.Restricted)
                     return Problem("Company is currently restricted!");
+
+                if (company == null)
+                    return Problem("Company not found!");
+
+                // If name dto is empty then receives the company name
+                if (DTO.NameOpt == "")
+                    DTO.NameOpt = company.NameOpt;
+
+                // If street dto is empty then receives the company address
+                if (company.Address.Street != "")
+                    DTO.Street = company.Address.Street;
+
+                // If number dto is 0 then receives the company number
+                if (DTO.Number == 0)
+                    DTO.Number = company.Address.Number;
+                
+                if (DTO.Street.Length > 100)
+                    return Problem("Street too long!");
+
+                if (DTO.NameOpt.Length > 30)
+                    return Problem("Name too long!");
+
+                if (DTO.Complement.Length > 10)
+                    return Problem("Complement too long!");
+
+                var result = await _companyService.Update(DTO, Cnpj);
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -154,15 +186,15 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("Status/{Cnpj}")]
-        public async Task<IActionResult> PatchStatus(Models.CompanyPatchStatusDTO DTO, string Cnpj)
+        public async Task<IActionResult> PatchStatus(CompanyPatchStatusDTO DTO, string Cnpj)
         {
             try
             {
                 var company = await _companyService.GetByCnpj(0, Cnpj);
-                
+
                 if (company.Restricted == DTO.Restricted)
                     return Problem("Company status is already " + DTO.Restricted);
-                
+
                 var result = await _companyService.UpdateStatus(DTO, Cnpj);
                 if (result == null)
                     return Problem("Company not found!");
