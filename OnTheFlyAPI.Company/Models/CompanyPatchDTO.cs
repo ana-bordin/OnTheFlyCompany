@@ -1,6 +1,4 @@
-﻿using OnTheFlyAPI.Address.Models;
-
-namespace OnTheFlyAPI.Company.Models
+﻿namespace OnTheFlyAPI.Company.Models
 {
     public class CompanyPatchDTO
     {

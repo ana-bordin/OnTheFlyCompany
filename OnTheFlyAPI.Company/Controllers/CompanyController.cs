@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OnTheFlyAPI.Address.Services;
 using OnTheFlyAPI.Company.Models;
 using OnTheFlyAPI.Company.Services;
 
@@ -148,7 +147,7 @@ namespace OnTheFlyAPI.Company.Controllers
             {
                 var company = await _companyService.GetByCnpj(0, Cnpj);
 
-                if(company.Restricted)
+                if (company.Restricted)
                     return Problem("Company is currently restricted!");
 
                 if (company == null)
@@ -165,7 +164,7 @@ namespace OnTheFlyAPI.Company.Controllers
                 // If number dto is 0 then receives the company number
                 if (DTO.Number == 0)
                     DTO.Number = company.Address.Number;
-                
+
                 if (DTO.Street.Length > 100)
                     return Problem("Street too long!");
 

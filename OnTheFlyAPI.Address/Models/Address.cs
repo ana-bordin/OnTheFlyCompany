@@ -19,7 +19,7 @@ namespace OnTheFlyAPI.Address.Models
 
         public Address()
         {
-            
+
         }
 
         public Address(AddressDTO dto)

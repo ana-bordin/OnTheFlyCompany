@@ -1,7 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-using System.ComponentModel.DataAnnotations;
-
-namespace OnTheFlyAPI.Company.Models
+﻿namespace OnTheFlyAPI.Company.Models
 {
     public class Aircraft
     {
