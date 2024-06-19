@@ -17,11 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OnTheFlyAPI.Address\OnTheFlyAPI.Address.csproj" />
-    <ProjectReference Include="..\OnTheFlyAPI.Company\OnTheFlyAPI.Company.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
