@@ -23,26 +23,26 @@ namespace OnTheFlyAPI.Company.Controllers
             {
                 var cnpjaux = Models.Company.RemoveMask(dto.Cnpj);
                 if (await _companyService.GetByCnpj(0, cnpjaux) != null)
-                    return Problem("Company is already registered!!");
+                    return BadRequest("Company is already registered!!");
                 if (await _companyService.GetByCnpj(1, cnpjaux) != null)
-                    return Problem("Company is already registered and it is deleted. Restore it if needed.");
+                    return BadRequest("Company is already registered and it is deleted. Restore it if needed.");
 
                 dto.Address.ZipCode = Address.Models.Address.RemoveMask(dto.Address.ZipCode);
 
                 if (dto.Address.ZipCode.Length != 8)
-                    return Problem($"ZipCode ({dto.Address.ZipCode}) different than 8 digits!");
+                    return BadRequest($"ZipCode ({dto.Address.ZipCode}) different than 8 digits!");
 
                 if (!Models.Company.VerifyCNPJ(dto.Cnpj))
-                    return Problem("Invalid CNPJ!");
+                    return BadRequest("Invalid CNPJ!");
 
                 if (dto.Name.Length < 2 || dto.Name == "string")
-                    return Problem("Name too short!");
+                    return BadRequest("Name too short!");
 
                 if (dto.Name.Length > 30)
-                    return Problem("Name too long!");
+                    return BadRequest("Name too long!");
 
                 if (dto.DtOpen > DateTime.Now)
-                    return Problem("Date of opening cannot be newer than current date!");
+                    return BadRequest("Date of opening cannot be newer than current date!");
 
                 if (dto.NameOpt == "" || dto.NameOpt == "string")
                     dto.NameOpt = dto.Name;
@@ -50,7 +50,7 @@ namespace OnTheFlyAPI.Company.Controllers
                 var address = await _companyService.RetrieveAdressAPI(dto.Address);
 
                 if (address == null)
-                    return Problem("Invalid ZipCode!");
+                    return BadRequest("Invalid ZipCode!");
 
                 company = new(dto);
                 company.Address = address;
@@ -69,7 +69,8 @@ namespace OnTheFlyAPI.Company.Controllers
                 return Problem(ex.Message);
             }
 
-            return CreatedAtAction("GetByCnpj", new { param = 0, company.Cnpj }, company);
+            return Ok(company);
+            //return CreatedAtAction("GetByCnpj", new { param = 0, company.Cnpj }, company);
         }
 
         [HttpGet("{param}")]
@@ -149,10 +150,10 @@ namespace OnTheFlyAPI.Company.Controllers
                 var company = await _companyService.GetByCnpj(0, Cnpj);
 
                 if(company.Restricted)
-                    return Problem("Company is currently restricted!");
+                    return BadRequest("Company is currently restricted!");
 
                 if (company == null)
-                    return Problem("Company not found!");
+                    return BadRequest("Company not found!");
 
                 // If name dto is empty then receives the company name
                 if (DTO.NameOpt == "")
@@ -167,13 +168,13 @@ namespace OnTheFlyAPI.Company.Controllers
                     DTO.Number = company.Address.Number;
                 
                 if (DTO.Street.Length > 100)
-                    return Problem("Street too long!");
+                    return BadRequest("Street too long!");
 
                 if (DTO.NameOpt.Length > 30)
-                    return Problem("Name too long!");
+                    return BadRequest("Name too long!");
 
                 if (DTO.Complement.Length > 10)
-                    return Problem("Complement too long!");
+                    return BadRequest("Complement too long!");
 
                 var result = await _companyService.Update(DTO, Cnpj);
 
@@ -193,11 +194,11 @@ namespace OnTheFlyAPI.Company.Controllers
                 var company = await _companyService.GetByCnpj(0, Cnpj);
 
                 if (company.Restricted == DTO.Restricted)
-                    return Problem("Company status is already " + DTO.Restricted);
+                    return BadRequest("Company status is already " + DTO.Restricted);
 
                 var result = await _companyService.UpdateStatus(DTO, Cnpj);
                 if (result == null)
-                    return Problem("Company not found!");
+                    return BadRequest("Company not found!");
 
                 return Ok(result);
             }
@@ -215,7 +216,7 @@ namespace OnTheFlyAPI.Company.Controllers
                 var company = await _companyService.GetByCnpj(0, cnpj);
 
                 if (company == null)
-                    return NotFound("Company not found!");
+                    return BadRequest("Company not found!");
 
                 var inserted = await _companyService.PostHistoryCompany(company);
 
@@ -244,7 +245,7 @@ namespace OnTheFlyAPI.Company.Controllers
                 var company = await _companyService.GetByCnpj(1, cnpj);
 
                 if (company == null)
-                    return NotFound("Company not found!");
+                    return BadRequest("Company not found!");
 
                 var inserted = await _companyService.PostCompany(company);
 
