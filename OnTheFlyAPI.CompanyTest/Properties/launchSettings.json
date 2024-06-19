@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "OnTheFlyAPI.CompanyTest": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
