@@ -10,7 +10,6 @@ namespace OnTheFlyAPI.Company.Controllers
     public class CompanyController : Controller
     {
         private readonly CompanyService _companyService;
-        private readonly AddressesService _addressService;
         public CompanyController(CompanyService companyService)
         {
             _companyService = companyService;
@@ -22,17 +21,18 @@ namespace OnTheFlyAPI.Company.Controllers
             Models.Company company;
             try
             {
-                var cnpjaux = string.Join("", dto.Cnpj.Where(Char.IsDigit)); // Somente numeros 
+                var cnpjaux = Models.Company.RemoveMask(dto.Cnpj);
                 if (await _companyService.GetByCnpj(0, cnpjaux) != null)
                     return Problem("Company is already registered!!");
                 if (await _companyService.GetByCnpj(1, cnpjaux) != null)
                     return Problem("Company is already registered and it is deleted. Restore it if needed.");
 
-                dto.Address.ZipCode = string.Join("", dto.Address.ZipCode.Where(Char.IsDigit)); // Somente numeros
+                dto.Address.ZipCode = Address.Models.Address.RemoveMask(dto.Address.ZipCode);
+
                 if (dto.Address.ZipCode.Length != 8)
                     return Problem($"ZipCode ({dto.Address.ZipCode}) different than 8 digits!");
 
-                if (!Models.Company.VerificarCnpj(dto.Cnpj))
+                if (!Models.Company.VerifyCNPJ(dto.Cnpj))
                     return Problem("Invalid CNPJ!");
 
                 if (dto.Name.Length < 2 || dto.Name == "string")
@@ -42,12 +42,13 @@ namespace OnTheFlyAPI.Company.Controllers
                     dto.NameOpt = dto.Name;
 
                 var address = await _companyService.RetrieveAdressAPI(dto.Address);
+
                 if (address == null)
                     return Problem("Invalid ZipCode!");
 
                 company = new(dto);
                 company.Address = address;
-                company.Address.ZipCode = Convert.ToUInt64(company.Address.ZipCode).ToString(@"00\.000\-000");
+                company.Address.ZipCode = Address.Models.Address.RemoveMask(company.Address.ZipCode);
 
                 var result = await _companyService.PostCompany(company);
 
@@ -74,7 +75,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                    return BadRequest("Parameter must be 0 (Companies registered) or 1 (Companies excludeds)");
                 }
                 if (company.Count == 0)
                 {
@@ -86,7 +87,6 @@ namespace OnTheFlyAPI.Company.Controllers
             {
                 return Problem(ex.Message);
             }
-
         }
 
         [HttpGet("cnpj/{param}/{cnpj}")]
@@ -98,7 +98,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                    return BadRequest("Parameter must be 0 (Companies registered) or 1 (Companies excludeds)");
                 }
                 if (company == null)
                 {
@@ -121,7 +121,7 @@ namespace OnTheFlyAPI.Company.Controllers
 
                 if (param != 0 && param != 1)
                 {
-                    return BadRequest("Parameter must be 0 (Companies without restriction) or 1 (Companies with restriction)");
+                    return BadRequest("Parameter must be 0 (Companies registered) or 1 (Companies excludeds)");
                 }
                 if (company == null)
                 {
@@ -154,7 +154,7 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("Status/{Cnpj}")]
-        public async Task<IActionResult> PatchStatus(Models.CompanyPatchStatusDTO DTO, string Cnpj)
+        public async Task<IActionResult> PatchStatus(CompanyPatchStatusDTO DTO, string Cnpj)
         {
             try
             {

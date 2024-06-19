@@ -35,7 +35,7 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<Models.Company> GetByCnpj(int param, string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            cnpj = Models.Company.InsertMask(cnpj);
             if (param == 0)
             {
                 return await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
@@ -96,13 +96,14 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Aircraft> PostAircraft(string cnpj)
         {
+            int random = new Random().Next(1000, 9999);
             Aircraft aircraft = new Aircraft
             {
                 Capacity = 100,
                 CnpjCompany = cnpj,
                 DTLastFlight = DateTime.Now,
                 DTRegistry = DateTime.Now,
-                Rab = "PT-2222"
+                Rab = $"PT-{random}"
             };
             if (aircraft != null)
                 _aircraftCollection.InsertOne(aircraft);
@@ -159,7 +160,7 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Company> Update(Models.CompanyPatchDTO DTO, string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            cnpj = Models.Company.InsertMask(cnpj);
             var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
             if (company != null)
             {
@@ -180,7 +181,7 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<Models.Company> UpdateStatus(Models.CompanyPatchStatusDTO DTO, string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            cnpj = Models.Company.InsertMask(cnpj);
             var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
             if (company != null)
             {
@@ -201,7 +202,7 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<bool> DeleteCompany(string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            cnpj = Models.Company.InsertMask(cnpj);
             var result = _companyCollection.DeleteOne(c => c.Cnpj == cnpj);
             if (result.DeletedCount > 0)
                 return true;
@@ -209,7 +210,7 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<bool> RestorageCompany(string cnpj)
         {
-            cnpj = Convert.ToUInt64(cnpj).ToString(@"00\.000\.000\/0000\-00");
+            cnpj = Models.Company.InsertMask(cnpj);
             var result = _companyHistoryCollection.DeleteOne(c => c.Cnpj == cnpj);
             if (result.DeletedCount > 0)
                 return true;
