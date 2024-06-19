@@ -47,13 +47,6 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task TestDelete()
-        {
-            var result = await _controller.Delete("09436256000110");
-            Assert.NotNull(result);
-        }
-
-        [Fact]
         public async Task Delete_NotFound()
         {
             var result = await _controller.Delete("12345678000195");
@@ -91,12 +84,21 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task Restorage_HistoryCompany()
+        public async Task Restorage_HistoryCompany_ReturnsOkObjectResult()
         {
-            var result = await _controller.Restorage("28634885000108");
+            var result = await _controller.Restorage("09436256000110");
 
             var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
             Assert.Equal("Company successfully restored!", okObjectResult.Value);
+        }
+
+        [Fact]
+        public async Task Restorage_HistoryCompany_NotFound()
+        {
+            var result = await _controller.Restorage("20034885000108");
+
+            var notFoundObjectResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal("Company not found!", notFoundObjectResult.Value);
         }
     }
 }
