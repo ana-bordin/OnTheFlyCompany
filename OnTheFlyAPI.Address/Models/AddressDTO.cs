@@ -1,7 +1,4 @@
-﻿using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
-namespace OnTheFlyAPI.Address.Models
+﻿namespace OnTheFlyAPI.Address.Models
 {
     public class AddressDTO
     {
