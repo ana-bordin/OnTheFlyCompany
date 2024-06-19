@@ -168,6 +168,8 @@ namespace OnTheFlyAPI.Company.Services
 
                 UpdateDefinition<Models.Company> update = Builders<Models.Company>.Update
                     .Set("NameOpt", DTO.NameOpt)
+                    .Set("Address.Street", DTO.Street)
+                    .Set("Address.Number", DTO.Number)
                     .Set("Address.Complement", DTO.Complement);
 
                 await _companyCollection.UpdateOneAsync(filter, update);

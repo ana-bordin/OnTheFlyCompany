@@ -36,7 +36,13 @@ namespace OnTheFlyAPI.Company.Controllers
                     return Problem("Invalid CNPJ!");
 
                 if (dto.Name.Length < 2 || dto.Name == "string")
-                    return Problem("Invalid Name!");
+                    return Problem("Name too short!");
+
+                if (dto.Name.Length > 30)
+                    return Problem("Name too long!");
+
+                if (dto.DtOpen > DateTime.Now)
+                    return Problem("Date of opening cannot be newer than current date!");
 
                 if (dto.NameOpt == "" || dto.NameOpt == "string")
                     dto.NameOpt = dto.Name;
@@ -136,15 +142,41 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("{Cnpj}")]
-        public async Task<IActionResult> Patch(Models.CompanyPatchDTO DTO, string Cnpj)
+        public async Task<IActionResult> Patch(CompanyPatchDTO DTO, string Cnpj)
         {
             try
             {
-                var result = await _companyService.Update(DTO, Cnpj);
-                if (result == null)
-                    return Problem("Company not found!");
-                if (result.Restricted)
+                var company = await _companyService.GetByCnpj(0, Cnpj);
+
+                if(company.Restricted)
                     return Problem("Company is currently restricted!");
+
+                if (company == null)
+                    return Problem("Company not found!");
+
+                // If name dto is empty then receives the company name
+                if (DTO.NameOpt == "")
+                    DTO.NameOpt = company.NameOpt;
+
+                // If street dto is empty then receives the company address
+                if (company.Address.Street != "")
+                    DTO.Street = company.Address.Street;
+
+                // If number dto is 0 then receives the company number
+                if (DTO.Number == 0)
+                    DTO.Number = company.Address.Number;
+                
+                if (DTO.Street.Length > 100)
+                    return Problem("Street too long!");
+
+                if (DTO.NameOpt.Length > 30)
+                    return Problem("Name too long!");
+
+                if (DTO.Complement.Length > 10)
+                    return Problem("Complement too long!");
+
+                var result = await _companyService.Update(DTO, Cnpj);
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -159,10 +191,10 @@ namespace OnTheFlyAPI.Company.Controllers
             try
             {
                 var company = await _companyService.GetByCnpj(0, Cnpj);
-                
+
                 if (company.Restricted == DTO.Restricted)
                     return Problem("Company status is already " + DTO.Restricted);
-                
+
                 var result = await _companyService.UpdateStatus(DTO, Cnpj);
                 if (result == null)
                     return Problem("Company not found!");
