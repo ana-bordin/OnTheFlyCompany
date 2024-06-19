@@ -148,11 +148,11 @@ namespace OnTheFlyAPI.Company.Controllers
             {
                 var company = await _companyService.GetByCnpj(0, Cnpj);
 
-                if(company.Restricted)
-                    return Problem("Company is currently restricted!");
-
                 if (company == null)
                     return Problem("Company not found!");
+
+                if (company.Restricted)
+                    return Problem("Company is currently restricted!");
 
                 // If name dto is empty then receives the company name
                 if (DTO.NameOpt == "")
@@ -262,6 +262,11 @@ namespace OnTheFlyAPI.Company.Controllers
             {
                 return Problem(ex.Message);
             }
+        }
+
+        public async Task Patch(CompanyDTO companyDTO)
+        {
+            throw new NotImplementedException();
         }
     }
 }
