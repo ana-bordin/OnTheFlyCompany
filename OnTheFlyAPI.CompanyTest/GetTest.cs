@@ -1,6 +1,6 @@
 namespace OnTheFlyAPI.CompanyTest
 {
-    public class PostTest
+    public class GetTest
     {
         [Fact]
         public void Test1()
