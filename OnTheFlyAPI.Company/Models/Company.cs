@@ -1,6 +1,4 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
-using System.ComponentModel.DataAnnotations;
 
 namespace OnTheFlyAPI.Company.Models
 {
