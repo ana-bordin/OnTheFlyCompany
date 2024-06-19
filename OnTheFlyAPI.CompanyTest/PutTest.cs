@@ -34,13 +34,12 @@ namespace OnTheFlyAPI.CompanyTest
                 NameOpt = "",
                 Complement = "aqui perto",
                 Number = 10
-                
+
             };
             //tentando achar um cnpj que nao existe na collection
             var patchCnpj = await _companyController.Patch(companyDTO, "63308382000135");
-            var result = patchCnpj as ObjectResult;
-
-            Assert.Equal("Company not found!", ((ProblemDetails)result.Value).Detail);
+            
+            Assert.Equal("Company not found!", ((ObjectResult)patchCnpj).Value);
         }
     }
 }
