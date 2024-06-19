@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyAPI.Company", "OnTh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyAPI.Address", "OnTheFlyAPI.Address\OnTheFlyAPI.Address.csproj", "{75F0CAEA-FC49-42C8-8097-8E7AEFD69295}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnTheFlyAPI.CompanyTest", "OnTheFlyAPI.CompanyTest\OnTheFlyAPI.CompanyTest.csproj", "{5341F71E-0452-4065-A947-2A4F77AE5C91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OnTheFlyAPI.CompanyTest", "OnTheFlyAPI.CompanyTest\OnTheFlyAPI.CompanyTest.csproj", "{5341F71E-0452-4065-A947-2A4F77AE5C91}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

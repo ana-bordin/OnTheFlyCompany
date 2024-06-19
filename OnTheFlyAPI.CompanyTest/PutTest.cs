@@ -1,42 +1,45 @@
+using Microsoft.AspNetCore.Mvc;
+using OnTheFlyAPI.Address.Models;
 using OnTheFlyAPI.Address.Services;
 using OnTheFlyAPI.Company.Controllers;
 using OnTheFlyAPI.Company.Services;
+using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.CompanyTest
 {
     public class PutTest
     {
-        AddressesService _addressesService;
-        CompanyService _companyService;
-        CompanyController _companyController;
+        private ICompanyAPIDataBaseSettings _settings;
+        private CompanyService _companyService;
+        private CompanyController _companyController;
 
         public PutTest()
         {
-            Address.Utils.ICompanyAPIDataBaseSettings config = new Address.Utils.CompanyAPIDataBaseSettings();
-            config.DatabaseName = "OnTheFlyTest";
-            config.CompanyCollectionName = "Company";
-            config.CompanyHistoryCollectionName = "CompanyHistory";
-            config.AddressCollectionName = "Address";
-            config.AircraftCollectionName = "Aircraft";
-            config.ConnectionString = "mongodb://root:Mongo%402024%23@localhost:27017";
-            _addressesService = new(config);
-
-            Company.Utils.ICompanyAPIDataBaseSettings config2 = new Company.Utils.CompanyAPIDataBaseSettings();
-            config2.DatabaseName = config.DatabaseName;
-            config2.CompanyCollectionName = config.CompanyCollectionName;
-            config2.CompanyHistoryCollectionName = config.CompanyHistoryCollectionName;
-            config2.AddressCollectionName = config.AddressCollectionName;
-            config2.AircraftCollectionName = config.AircraftCollectionName;
-            config2.ConnectionString = config.ConnectionString;
-            _companyService = new(config2);
-
+            _settings = new CompanyAPIDataBaseSettings();
+            _settings.DatabaseName = "OnTheFly";
+            _settings.ConnectionString = "mongodb://root:Mongo%402024%23@localhost:27017";
+            _settings.CompanyCollectionName = "Company";
+            _settings.CompanyHistoryCollectionName = "CompanyHistory";
+            _settings.AddressCollectionName = "Address";
+            _settings.AircraftCollectionName = "Aircraft";
+            _companyService = new CompanyService(_settings);
             _companyController = new(_companyService);
         }
-        
-        [Fact]
-        public void Test1()
-        {
 
+        [Fact]
+        public async Task PatchCnpjNotFound()
+        {
+            Company.Models.CompanyPatchDTO companyDTO = new Company.Models.CompanyPatchDTO
+            {
+                NameOpt = "",
+                Complement = "aqui perto",
+                Number = 10
+
+            };
+            //tentando achar um cnpj que nao existe na collection
+            var patchCnpj = await _companyController.Patch(companyDTO, "63308382000135");
+            
+            Assert.Equal("Company not found!", ((ObjectResult)patchCnpj).Value);
         }
     }
 }
