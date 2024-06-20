@@ -9,7 +9,7 @@ using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.CompanyTest
 {
-    public class DeleteTest
+    public class D_DeleteTest
     {
         private readonly MongoDbRunner _runner;
         private readonly IMongoDatabase _database;
@@ -18,7 +18,7 @@ namespace OnTheFlyAPI.CompanyTest
         private readonly AddressesService _addressService;
         private readonly AddressesController _addressController;
 
-        public DeleteTest()
+        public D_DeleteTest()
         {
             _runner = MongoDbRunner.Start();
             var client = new MongoClient(_runner.ConnectionString);
@@ -29,7 +29,7 @@ namespace OnTheFlyAPI.CompanyTest
                 AddressCollectionName = "Address",
                 AircraftCollectionName = "Aircraft",
                 ConnectionString = "mongodb://root:Mongo%402024%23@localhost:27017",
-                DatabaseName = "OnTheFly"
+                DatabaseName = "OnTheFlyTest"
             };
             OnTheFlyAPI.Address.Utils.CompanyAPIDataBaseSettings settingsAddress = new()
             {
@@ -47,23 +47,23 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task Delete_NotFound()
+        public async Task A_Delete_NotFound()
         {
             var result = await _controller.Delete("12345678000195");
 
-            var notFoundObjectResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var notFoundObjectResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             Assert.Equal("Company not found!", notFoundObjectResult.Value);
         }
 
         [Fact]
-        public async Task Delete_CompanyExists_ReturnsOkObjectResult()
+        public async Task B_Delete_CompanyExists_ReturnsOkObjectResult()
         {
             var company = new Company.Models.Company
             {
                 Cnpj = "28634885000108",
                 Name = "Valid Company",
                 NameOpt = "Optional Name",
-                DtOpen = DateTime.Now.AddYears(-1),
+                DtOpen = DateTime.Today.AddYears(-1),
                 Restricted = false,
                 Address = new Address.Models.Address
                 {
@@ -84,21 +84,39 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task Restorage_HistoryCompany_ReturnsOkObjectResult()
+        public async Task C_Restorage_HistoryCompany_ReturnsOkObjectResult()
         {
-            var result = await _controller.Restorage("09436256000110");
+            var result = await _controller.Restorage("28634885000108");
 
             var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
             Assert.Equal("Company successfully restored!", okObjectResult.Value);
         }
 
         [Fact]
-        public async Task Restorage_HistoryCompany_NotFound()
+        public async Task D_Restorage_HistoryCompany_NotFound()
         {
             var result = await _controller.Restorage("20034885000108");
 
-            var notFoundObjectResult = Assert.IsType<NotFoundObjectResult>(result.Result);
+            var notFoundObjectResult = Assert.IsType<BadRequestObjectResult>(result.Result);
             Assert.Equal("Company not found!", notFoundObjectResult.Value);
+        }
+
+        [Fact]
+        public async Task E_DeleteCompanyCreatedFromPost()
+        {
+            var result = await _controller.Delete("09436256000110");
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal("Company successfully deleted!", okObjectResult.Value);
+        }
+
+        [Fact]
+        public async Task F_RestoreCompanyCreatedFromPost()
+        {
+            var result = await _controller.Restorage("09436256000110");
+
+            var okObjectResult = Assert.IsType<OkObjectResult>(result.Result);
+            Assert.Equal("Company successfully restored!", okObjectResult.Value);
         }
     }
 }

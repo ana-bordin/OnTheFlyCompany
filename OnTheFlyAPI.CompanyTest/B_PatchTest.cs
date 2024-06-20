@@ -7,16 +7,16 @@ using OnTheFlyAPI.Company.Utils;
 
 namespace OnTheFlyAPI.CompanyTest
 {
-    public class PutTest
+    public class B_PatchTest
     {
         private ICompanyAPIDataBaseSettings _settings;
         private CompanyService _companyService;
         private CompanyController _companyController;
 
-        public PutTest()
+        public B_PatchTest()
         {
             _settings = new CompanyAPIDataBaseSettings();
-            _settings.DatabaseName = "OnTheFly";
+            _settings.DatabaseName = "OnTheFlyTest";
             _settings.ConnectionString = "mongodb://root:Mongo%402024%23@localhost:27017";
             _settings.CompanyCollectionName = "Company";
             _settings.CompanyHistoryCollectionName = "CompanyHistory";
@@ -27,7 +27,7 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task PatchCnpjNotFound()
+        public async Task A_PatchCnpjNotFound()
         {
             Company.Models.CompanyPatchDTO companyDTO = new Company.Models.CompanyPatchDTO
             {
@@ -40,6 +40,22 @@ namespace OnTheFlyAPI.CompanyTest
             var patchCnpj = await _companyController.Patch(companyDTO, "63308382000135");
             
             Assert.Equal("Company not found!", ((ObjectResult)patchCnpj).Value);
+        }
+
+        [Fact]
+        public async Task B_PatchCnpjOK()
+        {
+            Company.Models.CompanyPatchDTO companyDTO = new Company.Models.CompanyPatchDTO
+            {
+                NameOpt = "Empresa Modificada",
+                Complement = "Ali longe",
+                Number = 105
+
+            };
+            //tentando achar um cnpj que nao existe na collection
+            var patchCnpj = await _companyController.Patch(companyDTO, "09436256000110");
+
+            Assert.IsType<OkObjectResult>(patchCnpj);
         }
     }
 }
