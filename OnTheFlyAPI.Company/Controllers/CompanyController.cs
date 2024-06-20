@@ -21,10 +21,10 @@ namespace OnTheFlyAPI.Company.Controllers
             Models.Company company;
             try
             {
-                var cnpjaux = Models.Company.RemoveMask(dto.Cnpj);
-                if (await _companyService.GetByCnpj(0, cnpjaux) != null)
+                dto.Cnpj = Models.Company.RemoveMask(dto.Cnpj);
+                if (await _companyService.GetByCnpj(0, dto.Cnpj) != null)
                     return BadRequest("Company is already registered!!");
-                if (await _companyService.GetByCnpj(1, cnpjaux) != null)
+                if (await _companyService.GetByCnpj(1, dto.Cnpj) != null)
                     return BadRequest("Company is already registered and it is deleted. Restore it if needed.");
 
                 dto.Address.ZipCode = Address.Models.Address.RemoveMask(dto.Address.ZipCode);
@@ -52,10 +52,11 @@ namespace OnTheFlyAPI.Company.Controllers
                 if (address == null)
                     return BadRequest("Invalid ZipCode!");
 
+                dto.Address.ZipCode = Address.Models.Address.InsertMask(dto.Address.ZipCode);
+
                 company = new(dto);
                 company.Address = address;
-                company.Address.ZipCode = Address.Models.Address.RemoveMask(company.Address.ZipCode);
-
+                company.Address.ZipCode = dto.Address.ZipCode;
                 var result = await _companyService.PostCompany(company);
 
                 // Add aircraft
@@ -70,7 +71,6 @@ namespace OnTheFlyAPI.Company.Controllers
             }
 
             return Ok(company);
-            //return CreatedAtAction("GetByCnpj", new { param = 0, company.Cnpj }, company);
         }
 
         [HttpGet("{param}")]
@@ -86,7 +86,7 @@ namespace OnTheFlyAPI.Company.Controllers
                 }
                 if (company.Count == 0)
                 {
-                    return NotFound("There are no companies registered.");
+                    return BadRequest("There are no companies registered.");
                 }
                 return Ok(company);
             }
@@ -101,6 +101,7 @@ namespace OnTheFlyAPI.Company.Controllers
         {
             try
             {
+                cnpj = Models.Company.RemoveMask(cnpj);
                 var company = await _companyService.GetByCnpj(param, cnpj);
 
                 if (param != 0 && param != 1)
@@ -143,11 +144,12 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("{Cnpj}")]
-        public async Task<IActionResult> Patch(CompanyPatchDTO DTO, string Cnpj)
+        public async Task<IActionResult> Patch(CompanyPatchDTO DTO, string cnpj)
         {
             try
             {
-                var company = await _companyService.GetByCnpj(0, Cnpj);
+                cnpj = Models.Company.RemoveMask(cnpj);
+                var company = await _companyService.GetByCnpj(0, cnpj);
 
                 if (company == null)
                     return BadRequest("Company not found!");
@@ -176,7 +178,7 @@ namespace OnTheFlyAPI.Company.Controllers
                 if (DTO.Complement.Length > 10)
                     return BadRequest("Complement too long!");
 
-                var result = await _companyService.Update(DTO, Cnpj);
+                var result = await _companyService.Update(DTO, cnpj);
 
                 return Ok(result);
             }
@@ -187,16 +189,17 @@ namespace OnTheFlyAPI.Company.Controllers
         }
 
         [HttpPatch("Status/{Cnpj}")]
-        public async Task<IActionResult> PatchStatus(CompanyPatchStatusDTO DTO, string Cnpj)
+        public async Task<IActionResult> PatchStatus(CompanyPatchStatusDTO DTO, string cnpj)
         {
             try
             {
-                var company = await _companyService.GetByCnpj(0, Cnpj);
+                cnpj = Models.Company.RemoveMask(cnpj);
+                var company = await _companyService.GetByCnpj(0, cnpj);
 
                 if (company.Restricted == DTO.Restricted)
                     return BadRequest("Company status is already " + DTO.Restricted);
 
-                var result = await _companyService.UpdateStatus(DTO, Cnpj);
+                var result = await _companyService.UpdateStatus(DTO, cnpj);
                 if (result == null)
                     return BadRequest("Company not found!");
 
@@ -213,6 +216,7 @@ namespace OnTheFlyAPI.Company.Controllers
         {
             try
             {
+                cnpj = Models.Company.RemoveMask(cnpj);
                 var company = await _companyService.GetByCnpj(0, cnpj);
 
                 if (company == null)
@@ -242,6 +246,7 @@ namespace OnTheFlyAPI.Company.Controllers
         {
             try
             {
+                cnpj = Models.Company.RemoveMask(cnpj);
                 var company = await _companyService.GetByCnpj(1, cnpj);
 
                 if (company == null)

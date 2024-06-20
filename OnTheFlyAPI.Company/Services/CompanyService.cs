@@ -96,14 +96,24 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Aircraft> PostAircraft(string cnpj)
         {
-            int random = new Random().Next(1000, 9999);
+            Random random = new Random();
+            string rab = "ABC";
+            char[] rabAux = rab.ToCharArray();
+            cnpj = Models.Company.InsertMask(cnpj);
+
+            for (int i = 0; i < rab.Length; i++)
+            {
+                rabAux[i] = (char)random.Next('A', 'Z' + 1);
+            }
+            rab = new String(rabAux);
+
             Aircraft aircraft = new Aircraft
             {
                 Capacity = 100,
                 CnpjCompany = cnpj,
-                DTLastFlight = DateTime.Now,
-                DTRegistry = DateTime.Now,
-                Rab = $"PT-{random}"
+                DTLastFlight = null,
+                DTRegistry = DateTime.Today,
+                Rab = $"PP-{rab}"
             };
             if (aircraft != null)
                 _aircraftCollection.InsertOne(aircraft);
@@ -144,6 +154,9 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Company> PostCompany(Models.Company company)
         {
+            company.Cnpj = Models.Company.RemoveMask(company.Cnpj);
+            company.Cnpj = Models.Company.InsertMask(company.Cnpj);
+
             if (company != null)
                 _companyCollection.InsertOne(company);
 
@@ -151,6 +164,8 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<Models.Company> PostHistoryCompany(Models.Company company)
         {
+            company.Cnpj = Models.Company.RemoveMask(company.Cnpj);
+            company.Cnpj = Models.Company.InsertMask(company.Cnpj);
             if (company != null)
                 _companyHistoryCollection.InsertOne(company);
 
@@ -160,6 +175,7 @@ namespace OnTheFlyAPI.Company.Services
 
         public async Task<Models.Company> Update(Models.CompanyPatchDTO DTO, string cnpj)
         {
+            cnpj = Models.Company.RemoveMask(cnpj);
             cnpj = Models.Company.InsertMask(cnpj);
             var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
             if (company != null)
@@ -183,6 +199,7 @@ namespace OnTheFlyAPI.Company.Services
         }
         public async Task<Models.Company> UpdateStatus(Models.CompanyPatchStatusDTO DTO, string cnpj)
         {
+            cnpj = Models.Company.RemoveMask(cnpj);
             cnpj = Models.Company.InsertMask(cnpj);
             var company = await _companyCollection.Find(c => c.Cnpj == cnpj).FirstOrDefaultAsync();
             if (company != null)

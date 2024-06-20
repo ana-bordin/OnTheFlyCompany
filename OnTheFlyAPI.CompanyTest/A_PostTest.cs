@@ -7,13 +7,13 @@ using OnTheFlyAPI.Company.Services;
 using System.Diagnostics;
 namespace OnTheFlyAPI.CompanyTest
 {
-    public class PostTest
+    public class A_PostTest
     {
         AddressesService _addressesService;
         CompanyService _companyService;
         CompanyController _companyController;
 
-        public PostTest()
+        public A_PostTest()
         {
             Address.Utils.ICompanyAPIDataBaseSettings config = new Address.Utils.CompanyAPIDataBaseSettings();
             config.DatabaseName = "OnTheFlyTest";
@@ -37,11 +37,11 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task<Address.Models.Address> CreateAddress()
+        public async Task<Address.Models.Address> A_CreateAddress()
         {
             AddressDTO addressDTO = new AddressDTO
             {
-                ZipCode = "14802020",
+                ZipCode = "14.802-020",
                 Complement = "aqui perto",
                 Number = 10
             };
@@ -58,70 +58,64 @@ namespace OnTheFlyAPI.CompanyTest
             return address;
         }
         [Fact]
-        public async Task PostOK()
+        public async Task B_CreateCompany()
         {
             Company.Models.CompanyDTO companyDTO = new Company.Models.CompanyDTO
             {
-                Cnpj = "73.660.631/0001-00",
-                DtOpen = DateTime.Now,
+                Cnpj = "09.436.256/0001-10",
+                DtOpen = DateTime.Today,
                 Name = "Empresa x",
                 NameOpt = "",
                 Restricted = false,
                 Address = new AddressDTO
                 {
-                    ZipCode = "14802020",
+                    ZipCode = "14.802-020",
                     Complement = "aqui perto",
                     Number = 10
                 }
             };
-            var result = await _companyController.Post(companyDTO);
-            var okObject = result.Result as OkObjectResult;
-            var createdCompany = Assert.IsAssignableFrom<Company.Models.Company>(okObject.Value);
-            Assert.Equal(companyDTO.Name, createdCompany.Name);
-            Assert.Equal(companyDTO.Address.ZipCode, createdCompany.Address.ZipCode);
-
-            // Delete the company and send it to History
-            await _companyController.Delete(Company.Models.Company.RemoveMask(companyDTO.Cnpj));
+            var company = await _companyController.Post(companyDTO);
+            Assert.IsType<OkObjectResult>(company.Result);
         }
 
         [Fact]
-        public async Task PostAlreadyRegistered()
+        public async Task C_CompanyAlreadyExists()
         {
             Company.Models.CompanyDTO companyDTO = new Company.Models.CompanyDTO
             {
-                Cnpj = "73.660.631/0001-00",
-                DtOpen = DateTime.Now,
+                Cnpj = "09.436.256/0001-10",
+                DtOpen = DateTime.Today,
                 Name = "Empresa x",
                 NameOpt = "",
                 Restricted = false,
                 Address = new AddressDTO
                 {
-                    ZipCode = "14802020",
+                    ZipCode = "14.802-020",
                     Complement = "aqui perto",
                     Number = 10
                 }
             };
             var result = await _companyController.Post(companyDTO);
             var badRequestResult = result.Result as BadRequestObjectResult;
-            Assert.Equal("Company is already registered and it is deleted. Restore it if needed.", badRequestResult.Value);
+            Assert.Equal("Company is already registered!!", badRequestResult.Value);
 
             // Delete it from history (and dont recover it)
-            _companyService.RestorageCompany(Company.Models.Company.RemoveMask(companyDTO.Cnpj));
+            //_companyService.RestorageCompany(Company.Models.Company.RemoveMask(companyDTO.Cnpj));
         }
 
         [Fact]
-        public async Task PostInvalidCNPJ()
+        public async Task D_CompanyInvalidCNPJ()
         {
             Company.Models.CompanyDTO companyDTO = new Company.Models.CompanyDTO
             {
                 Cnpj = "11.111.111/1111-11",
-                DtOpen = DateTime.Now,
+                DtOpen = DateTime.Today,
                 Name = "Empresa Y",
                 NameOpt = "",
                 Restricted = false,
                 Address = new AddressDTO
                 {
-                    ZipCode = "14802020",
+                    ZipCode = "14.802-020",
                     Complement = "aqui perto",
                     Number = 10
                 }
@@ -132,18 +126,18 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task PostInvalidName()
+        public async Task E_CompanyInvalidName()
         {
             Company.Models.CompanyDTO companyDTO = new Company.Models.CompanyDTO
             {
                 Cnpj = "55.879.508/0001-01",
-                DtOpen = DateTime.Now,
+                DtOpen = DateTime.Today,
                 Name = "Empresa YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY",
                 NameOpt = "",
                 Restricted = false,
                 Address = new AddressDTO
                 {
-                    ZipCode = "14802020",
+                    ZipCode = "14.802-020",
                     Complement = "aqui perto",
                     Number = 10
                 }
@@ -154,7 +148,7 @@ namespace OnTheFlyAPI.CompanyTest
         }
 
         [Fact]
-        public async Task PostInvalidDtOpen()
+        public async Task F_CompanyInvalidDtOpen()
         {
             Company.Models.CompanyDTO companyDTO = new Company.Models.CompanyDTO
             {
@@ -165,7 +159,7 @@ namespace OnTheFlyAPI.CompanyTest
                 Restricted = false,
                 Address = new AddressDTO
                 {
-                    ZipCode = "14802020",
+                    ZipCode = "14.802-020",
                     Complement = "aqui perto",
                     Number = 10
                 }

@@ -24,7 +24,7 @@ namespace OnTheFlyAPI.Address.Services
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    string url = $"{_url}/{addressDTO.ZipCode}/json/";
+                    string url = $"{_url}/{Models.Address.RemoveMask(addressDTO.ZipCode)}/json/";
                     HttpResponseMessage response = await client.GetAsync(url);
 
                     if (response.IsSuccessStatusCode)
